@@ -98,3 +98,58 @@ export async function saveExchangeRatesCacheMerge(
     /* ignore */
   }
 }
+
+/** One candle for lightweight-charts (daily buckets). */
+export type ChartPoint = { timeSec: number; value: number };
+
+const CHART_SERIES_PREFIX = "market-chart-series-v1:";
+
+function isChartPoint(x: unknown): x is ChartPoint {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return (
+    typeof o.timeSec === "number" &&
+    Number.isFinite(o.timeSec) &&
+    typeof o.value === "number" &&
+    Number.isFinite(o.value)
+  );
+}
+
+export function chartCacheKeyCrypto(symbol: string, days: number): string {
+  return `c:${symbol.trim().toUpperCase()}:${days}`;
+}
+
+export function chartCacheKeyEquity(
+  symbol: string,
+  days: number,
+  exchange?: string,
+): string {
+  const ex = (exchange?.trim().toUpperCase() ?? "") || "_";
+  return `e:${symbol.trim().toUpperCase()}:${ex}:${days}`;
+}
+
+export async function loadChartSeriesForKey(
+  cacheKey: string,
+): Promise<ChartPoint[]> {
+  try {
+    const db = await getDb();
+    const raw = await db.get(STORE, CHART_SERIES_PREFIX + cacheKey);
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(isChartPoint);
+  } catch {
+    return [];
+  }
+}
+
+export async function saveChartSeriesForKey(
+  cacheKey: string,
+  points: ChartPoint[],
+): Promise<void> {
+  if (points.length === 0) return;
+  try {
+    const db = await getDb();
+    await db.put(STORE, points, CHART_SERIES_PREFIX + cacheKey);
+  } catch {
+    /* ignore */
+  }
+}

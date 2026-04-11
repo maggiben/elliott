@@ -115,6 +115,8 @@ export function PriceChart() {
     if (selection?.kind === "equity") return equityQ.data ?? [];
     return [];
   }, [selection?.kind, cryptoQ.data, equityQ.data]);
+  const showChartLoader = loading && series.length === 0;
+  const showChartError = error && series.length === 0;
 
   useEffect(() => {
     const line = seriesRef.current;
@@ -195,7 +197,7 @@ export function PriceChart() {
         }}
       >
         <LightweightChartMount chartRef={chartRef} seriesRef={seriesRef} />
-        {loading ? (
+        {showChartLoader ? (
           <Box
             sx={{
               position: "absolute",
@@ -210,7 +212,7 @@ export function PriceChart() {
             <CircularProgress size={28} />
           </Box>
         ) : null}
-        {error ? (
+        {showChartError ? (
           <Typography
             variant="body2"
             color="error"
