@@ -50,19 +50,25 @@ export async function fetchQuotesForPortfolio(
       });
   }
 
-  const results = await Promise.all(
+  const settled = await Promise.allSettled(
     [...uniq.values()].map(async (p) => {
       const k = positionQuoteKey(p);
-      const data =
-        p.kind === "equity"
-          ? await fetchEquityQuote(p.symbol, p.exchange, signal)
-          : await fetchCryptoQuote(p.symbol, signal);
-      return { k, data } as const;
+      try {
+        const data =
+          p.kind === "equity"
+            ? await fetchEquityQuote(p.symbol, p.exchange, signal)
+            : await fetchCryptoQuote(p.symbol, signal);
+        return { k, data } as const;
+      } catch {
+        return { k, data: null } as const;
+      }
     }),
   );
 
   const out: Record<QuoteKey, MarketData> = {};
-  for (const { k, data } of results) {
+  for (const r of settled) {
+    if (r.status !== "fulfilled") continue;
+    const { k, data } = r.value;
     if (data) out[k] = data;
   }
   return out;

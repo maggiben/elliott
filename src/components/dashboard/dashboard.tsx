@@ -141,6 +141,9 @@ export function Dashboard() {
         {quotesQuery.isError ? (
           <Alert severity="warning">
             Live quotes failed to refresh. Check your connection or API limits.
+            {quotesQuery.data && Object.keys(quotesQuery.data).length > 0
+              ? " Showing the last saved prices from this device until a refresh succeeds."
+              : null}
           </Alert>
         ) : null}
 
