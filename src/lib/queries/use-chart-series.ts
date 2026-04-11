@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { coingeckoMarketChartUsd, coingeckoSearchTopCoin } from "@/lib/api/coingecko";
 import { fetchTwelveDataTimeSeries } from "@/lib/api/twelvedata";
+import { fetchBcbaIolUdfDailySeries } from "@/lib/providers/listing-html-bcba/fetch-iol-udf-daily-series";
 import type { ChartPoint } from "@/lib/storage/market-cache-db";
 import {
   chartCacheKeyCrypto,
@@ -103,7 +104,12 @@ export function useEquityChartSeries(
 
       let fresh: ChartPoint[] = [];
       try {
-        fresh = await fetchTwelveDataTimeSeries(sym, days, signal, ex);
+        if (ex?.toUpperCase() === "BCBA") {
+          fresh = await fetchBcbaIolUdfDailySeries(sym, days, signal);
+        }
+        if (fresh.length === 0) {
+          fresh = await fetchTwelveDataTimeSeries(sym, days, signal, ex);
+        }
       } catch {
         fresh = [];
       }
