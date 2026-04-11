@@ -156,9 +156,6 @@ export function Dashboard() {
         </Grid>
 
         <Paper variant="outlined" sx={{ p: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>
-            Chart (TradingView Lightweight Charts)
-          </Typography>
           <PriceChart />
         </Paper>
       </Stack>
