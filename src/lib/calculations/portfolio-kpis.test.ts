@@ -167,4 +167,36 @@ describe("computePortfolioKpis", () => {
     expect(kpis.hasMixedCurrencies).toBe(false);
     expect(kpis.totalValue).toBeCloseTo(1, 5);
   });
+
+  it("includes fixed income using synthetic quote keyed by position id", () => {
+    const positions: PortfolioPosition[] = [
+      {
+        id: "pf1",
+        symbol: "PF",
+        quantity: 1_000_000,
+        kind: "fixed_income",
+        fixedIncomeAnnualRatePct: 0,
+        fixedIncomeStartDate: "2024-01-01",
+        fixedIncomeMaturityDate: "2024-12-31",
+        fixedIncomeCurrency: "ARS",
+      },
+    ];
+    const quotes: Record<string, MarketData | undefined> = {
+      "fixed_income:pf1": md({
+        symbol: "PF",
+        kind: "fixed_income",
+        price: 1,
+        currency: "ARS",
+        source: "fixed_income_synthetic",
+      }),
+    };
+
+    const kpis = computePortfolioKpis(positions, quotes, {
+      displayCurrency: "ARS",
+    });
+
+    expect(kpis.hasMixedCurrencies).toBe(false);
+    expect(kpis.totalValue).toBe(1_000_000);
+    expect(kpis.allocation[0]?.kind).toBe("fixed_income");
+  });
 });

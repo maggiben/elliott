@@ -7,10 +7,13 @@ export const queryKeys = {
     [
       "portfolio-quotes",
       [...positions]
-        .map(
-          (p) =>
-            `${positionQuoteKey(p)}:${p.quantity}:${p.avgCostUsd ?? ""}`,
-        )
+        .map((p) => {
+          const base = `${positionQuoteKey(p)}:${p.quantity}:${p.avgCostUsd ?? ""}`;
+          if (p.kind === "fixed_income") {
+            return `${base}:${p.fixedIncomeAnnualRatePct ?? ""}:${p.fixedIncomeStartDate ?? ""}:${p.fixedIncomeMaturityDate ?? ""}:${p.fixedIncomeCurrency ?? ""}`;
+          }
+          return base;
+        })
         .sort(),
     ] as const,
 

@@ -1,11 +1,13 @@
-export type AssetKind = "crypto" | "equity";
+export type AssetKind = "crypto" | "equity" | "fixed_income";
 
 export type MarketDataSource =
   | "coingecko"
   | "binance"
   | "twelvedata"
   /** HTML listing page (e.g. BCBA); swappable provider under `src/lib/providers/` */
-  | "listing_html";
+  | "listing_html"
+  /** User-entered term deposit; no external quote */
+  | "fixed_income_synthetic";
 
 /** Normalized snapshot used across the app (UI, KPIs, opportunities). */
 export type MarketData = {
@@ -28,10 +30,14 @@ export type QuoteKey = `${AssetKind}:${string}`;
 
 /** Keys the quote map; exchange disambiguates BCBA / dual-listing collisions. */
 export function positionQuoteKey(p: {
+  id: string;
   kind: AssetKind;
   symbol: string;
   exchange?: string;
 }): QuoteKey {
+  if (p.kind === "fixed_income") {
+    return `fixed_income:${p.id}`;
+  }
   const sym = p.symbol.trim().toUpperCase();
   if (p.kind === "equity") {
     const ex = p.exchange?.trim();
@@ -40,6 +46,10 @@ export function positionQuoteKey(p: {
   return `${p.kind}:${sym}`;
 }
 
-export function quoteKey(kind: AssetKind, symbol: string): QuoteKey {
-  return positionQuoteKey({ kind, symbol });
+/** Crypto / equity only; fixed income quotes are keyed by position id. */
+export function quoteKey(
+  kind: Exclude<AssetKind, "fixed_income">,
+  symbol: string,
+): QuoteKey {
+  return positionQuoteKey({ id: "", kind, symbol });
 }

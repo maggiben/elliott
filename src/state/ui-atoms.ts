@@ -13,6 +13,8 @@ export const chartSelectionAtom = atom<{
   exchange?: string;
   /** Resolved from live quote, position name, or symbol search when adding. */
   displayName?: string;
+  /** Same symbol may repeat across plazos; required to match quotes for `fixed_income`. */
+  positionId?: string;
 } | null>(null);
 
 export type PositionDialogState =

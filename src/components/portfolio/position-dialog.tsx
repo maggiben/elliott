@@ -41,6 +41,10 @@ type FormState = {
   avgCostUsd: string;
   name: string;
   exchange: string;
+  fixedIncomeAnnualRatePct: string;
+  fixedIncomeStartDate: string;
+  fixedIncomeMaturityDate: string;
+  fixedIncomeCurrency: string;
 };
 
 const emptyForm: FormState = {
@@ -50,6 +54,10 @@ const emptyForm: FormState = {
   avgCostUsd: "",
   name: "",
   exchange: "",
+  fixedIncomeAnnualRatePct: "",
+  fixedIncomeStartDate: "",
+  fixedIncomeMaturityDate: "",
+  fixedIncomeCurrency: "ARS",
 };
 
 function parseNum(s: string): number | null {
@@ -71,6 +79,13 @@ function initialForm(
     avgCostUsd: p.avgCostUsd !== undefined ? String(p.avgCostUsd) : "",
     name: p.name ?? "",
     exchange: p.exchange ?? "",
+    fixedIncomeAnnualRatePct:
+      p.fixedIncomeAnnualRatePct !== undefined
+        ? String(p.fixedIncomeAnnualRatePct)
+        : "",
+    fixedIncomeStartDate: p.fixedIncomeStartDate ?? "",
+    fixedIncomeMaturityDate: p.fixedIncomeMaturityDate ?? "",
+    fixedIncomeCurrency: p.fixedIncomeCurrency ?? "ARS",
   };
 }
 
@@ -111,6 +126,8 @@ function PositionDialogInner({
     [form.kind, suggest.options],
   );
 
+  const dateRe = /^\d{4}-\d{2}-\d{2}$/;
+
   const editing = useMemo(() => {
     if (dialog.mode !== "edit") return null;
     return portfolio.find((p) => p.id === dialog.id) ?? null;
@@ -127,6 +144,49 @@ function PositionDialogInner({
 
     const exchangeTrim = form.exchange.trim();
     const exchange = exchangeTrim || undefined;
+
+    if (form.kind === "fixed_income") {
+      const rate = parseNum(form.fixedIncomeAnnualRatePct.trim());
+      const start = form.fixedIncomeStartDate.trim();
+      const maturity = form.fixedIncomeMaturityDate.trim();
+      if (rate === null || rate < 0) return;
+      if (!dateRe.test(start) || !dateRe.test(maturity)) return;
+      if (start > maturity) return;
+      const cur =
+        form.fixedIncomeCurrency.trim().toUpperCase() || "ARS";
+
+      if (dialog.mode === "create") {
+        setPortfolio((prev) =>
+          addPosition(prev, {
+            symbol: sym,
+            kind: "fixed_income",
+            quantity: qty,
+            avgCostUsd: avgCostUsd ?? undefined,
+            name: form.name.trim() || undefined,
+            fixedIncomeAnnualRatePct: rate,
+            fixedIncomeStartDate: start,
+            fixedIncomeMaturityDate: maturity,
+            fixedIncomeCurrency: cur,
+          }),
+        );
+      } else if (editing) {
+        setPortfolio((prev) =>
+          updatePosition(prev, editing.id, {
+            symbol: sym,
+            kind: "fixed_income",
+            quantity: qty,
+            avgCostUsd: avgCostUsd ?? undefined,
+            name: form.name.trim() || undefined,
+            fixedIncomeAnnualRatePct: rate,
+            fixedIncomeStartDate: start,
+            fixedIncomeMaturityDate: maturity,
+            fixedIncomeCurrency: cur,
+          }),
+        );
+      }
+      onClose();
+      return;
+    }
 
     if (dialog.mode === "create") {
       setPortfolio((prev) =>
@@ -168,13 +228,33 @@ function PositionDialogInner({
       symbol: "",
       name: "",
       exchange: "",
+      fixedIncomeAnnualRatePct: "",
+      fixedIncomeStartDate: "",
+      fixedIncomeMaturityDate: "",
+      fixedIncomeCurrency: "ARS",
     }));
     setSymbolInput("");
     setDebouncedQuery("");
   };
 
   const symbolField =
-    form.kind === "crypto" ? (
+    form.kind === "fixed_income" ? (
+      <TextField
+        label="Label / code"
+        value={symbolInput}
+        onChange={(e) => {
+          const v = e.target.value;
+          setSymbolInput(v);
+          setForm((f) => ({
+            ...f,
+            symbol: normalizePortfolioSymbol(v),
+          }));
+        }}
+        fullWidth
+        required
+        helperText="Short tag (e.g. PF-ARS, bank name). Not looked up on markets."
+      />
+    ) : form.kind === "crypto" ? (
       <Autocomplete<CoinGeckoSearchCoin, false, false, true>
         freeSolo
         options={cryptoOptions}
@@ -329,28 +409,104 @@ function PositionDialogInner({
             >
               <MenuItem value="crypto">Cryptocurrency</MenuItem>
               <MenuItem value="equity">Stock / ETF (equity)</MenuItem>
+              <MenuItem value="fixed_income">
+                Plazo fijo / term deposit
+              </MenuItem>
             </Select>
           </FormControl>
           <Typography variant="caption" color="text.secondary">
-            Search and quotes: CoinGecko / Binance (crypto), TwelveData
-            (equities).
+            {form.kind === "fixed_income"
+              ? "Value = principal × (1 + TNA × days/365), simple interest, from your dates (no market feed)."
+              : "Search and quotes: CoinGecko / Binance (crypto), TwelveData (equities)."}
           </Typography>
           {symbolField}
+          {form.kind !== "fixed_income" ? (
+            <TextField
+              label="Exchange / venue (optional)"
+              value={form.exchange}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, exchange: e.target.value }))
+              }
+              fullWidth
+              helperText={
+                form.kind === "equity"
+                  ? "TwelveData exchange code when needed (e.g. BCBA for local listings)."
+                  : "e.g. a specific venue; crypto quotes use aggregated spot prices."
+              }
+            />
+          ) : null}
+          {form.kind === "fixed_income" ? (
+            <>
+              <TextField
+                label="TNA — tasa nominal anual (%)"
+                value={form.fixedIncomeAnnualRatePct}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    fixedIncomeAnnualRatePct: e.target.value,
+                  }))
+                }
+                type="number"
+                fullWidth
+                required
+                slotProps={{ htmlInput: { min: 0, step: "any" } }}
+                helperText="Annual rate in percent (e.g. 45 for 45%)."
+              />
+              <TextField
+                label="Start date"
+                type="date"
+                value={form.fixedIncomeStartDate}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    fixedIncomeStartDate: e.target.value,
+                  }))
+                }
+                fullWidth
+                required
+                slotProps={{ htmlInput: { "aria-label": "Start date" } }}
+              />
+              <TextField
+                label="Maturity date"
+                type="date"
+                value={form.fixedIncomeMaturityDate}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    fixedIncomeMaturityDate: e.target.value,
+                  }))
+                }
+                fullWidth
+                required
+                slotProps={{ htmlInput: { "aria-label": "Maturity date" } }}
+              />
+              <FormControl fullWidth>
+                <InputLabel id="fi-currency-label">Currency</InputLabel>
+                <Select
+                  labelId="fi-currency-label"
+                  label="Currency"
+                  value={form.fixedIncomeCurrency}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      fixedIncomeCurrency: e.target.value,
+                    }))
+                  }
+                >
+                  <MenuItem value="ARS">ARS</MenuItem>
+                  <MenuItem value="USD">USD</MenuItem>
+                  <MenuItem value="EUR">EUR</MenuItem>
+                  <MenuItem value="USDT">USDT</MenuItem>
+                </Select>
+              </FormControl>
+            </>
+          ) : null}
           <TextField
-            label="Exchange / venue (optional)"
-            value={form.exchange}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, exchange: e.target.value }))
+            label={
+              form.kind === "fixed_income"
+                ? "Principal amount"
+                : "Quantity"
             }
-            fullWidth
-            helperText={
-              form.kind === "equity"
-                ? "TwelveData exchange code when needed (e.g. BCBA for local listings)."
-                : "e.g. a specific venue; crypto quotes use aggregated spot prices."
-            }
-          />
-          <TextField
-            label="Quantity"
             value={form.quantity}
             onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
             type="number"

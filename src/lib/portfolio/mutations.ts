@@ -45,6 +45,15 @@ export function updatePosition(
       if (ex) next.exchange = ex;
       else delete next.exchange;
     }
+    if (patch.kind !== undefined && patch.kind !== "fixed_income") {
+      delete next.fixedIncomeAnnualRatePct;
+      delete next.fixedIncomeStartDate;
+      delete next.fixedIncomeMaturityDate;
+      delete next.fixedIncomeCurrency;
+    }
+    if (next.kind === "fixed_income") {
+      delete next.exchange;
+    }
     return next;
   });
 }

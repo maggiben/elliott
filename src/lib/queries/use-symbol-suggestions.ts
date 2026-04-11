@@ -8,8 +8,10 @@ import { queryKeys } from "./keys";
 
 export function useSymbolSuggestions(kind: AssetKind, debouncedQuery: string) {
   const q = debouncedQuery.trim();
-  const enabledCrypto = kind === "crypto" && q.length >= 1;
-  const enabledEquity = kind === "equity" && q.length >= 1;
+  const enabledCrypto =
+    kind === "crypto" && q.length >= 1;
+  const enabledEquity =
+    kind === "equity" && q.length >= 1;
 
   const cryptoQ = useQuery({
     queryKey: queryKeys.symbolSuggestCrypto(q),
@@ -24,6 +26,10 @@ export function useSymbolSuggestions(kind: AssetKind, debouncedQuery: string) {
     enabled: enabledEquity,
     staleTime: 60_000,
   });
+
+  if (kind === "fixed_income") {
+    return { options: [], isLoading: false, isError: false } as const;
+  }
 
   if (kind === "crypto") {
     return {

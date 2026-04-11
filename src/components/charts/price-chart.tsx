@@ -26,11 +26,18 @@ import {
   type MutableRefObject,
 } from "react";
 import { assetKindUiLabelLong } from "@/lib/format/asset-kind";
+import type { AssetKind } from "@/lib/market-data/types";
 import {
   useCryptoChartSeries,
   useEquityChartSeries,
 } from "@/lib/queries/use-chart-series";
 import { chartDaysAtom, chartSelectionAtom } from "@/state/ui-atoms";
+
+function chartKindChipColor(kind: AssetKind): "secondary" | "primary" | "success" {
+  if (kind === "crypto") return "secondary";
+  if (kind === "fixed_income") return "success";
+  return "primary";
+}
 
 type ChartMountProps = {
   chartRef: MutableRefObject<IChartApi | null>;
@@ -137,6 +144,39 @@ export function PriceChart() {
     );
   }
 
+  if (selection.kind === "fixed_income") {
+    return (
+      <Stack spacing={1.5}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            flexWrap: "wrap",
+            rowGap: 0.5,
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+            {selection.displayName
+              ? `${selection.displayName} (${selection.symbol.toUpperCase()})`
+              : selection.symbol.toUpperCase()}
+          </Typography>
+          <Chip
+            size="small"
+            label={assetKindUiLabelLong(selection.kind)}
+            color={chartKindChipColor(selection.kind)}
+            variant="outlined"
+          />
+        </Stack>
+        <Typography variant="body2" color="text.secondary">
+          There is no market price history for term deposits. The table uses your
+          TNA and dates (simple interest, ACT/365-style day count) to mark the
+          position to model value.
+        </Typography>
+      </Stack>
+    );
+  }
+
   return (
     <Stack spacing={1.5}>
       <Box
@@ -167,7 +207,7 @@ export function PriceChart() {
           <Chip
             size="small"
             label={assetKindUiLabelLong(selection.kind)}
-            color={selection.kind === "crypto" ? "secondary" : "primary"}
+            color={chartKindChipColor(selection.kind)}
             variant="outlined"
           />
         </Stack>

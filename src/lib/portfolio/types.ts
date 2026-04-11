@@ -11,6 +11,14 @@ export type PortfolioPosition = {
   name?: string;
   /** Listing venue (e.g. TwelveData exchange for equities); optional */
   exchange?: string;
+  /**
+   * Term deposit / plazo fijo (`kind: "fixed_income"`): principal in `quantity`,
+   * nominal annual rate (TNA) in percent, ISO `YYYY-MM-DD` dates, position currency.
+   */
+  fixedIncomeAnnualRatePct?: number;
+  fixedIncomeStartDate?: string;
+  fixedIncomeMaturityDate?: string;
+  fixedIncomeCurrency?: string;
 };
 
 export function emptyPortfolio(): PortfolioPosition[] {

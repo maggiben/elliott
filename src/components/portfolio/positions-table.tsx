@@ -16,6 +16,7 @@ import { memo, useCallback } from "react";
 import { positionQuoteKey } from "@/lib/market-data/types";
 import type { MarketData } from "@/lib/market-data/types";
 import { assetKindUiLabel } from "@/lib/format/asset-kind";
+import type { AssetKind } from "@/lib/market-data/types";
 import { formatPercentPoints, formatQuoteMoney } from "@/lib/format/numbers";
 import type { PortfolioPosition } from "@/lib/portfolio/types";
 import { chartSelectionAtom, positionDialogAtom } from "@/state/ui-atoms";
@@ -28,6 +29,12 @@ type RowProps = {
   valueByPositionId?: Record<string, number>;
   bookDisplayCurrency?: string;
 };
+
+function kindChipColor(kind: AssetKind): "secondary" | "primary" | "success" {
+  if (kind === "crypto") return "secondary";
+  if (kind === "fixed_income") return "success";
+  return "primary";
+}
 
 const Row = memo(function Row({
   position,
@@ -78,7 +85,7 @@ const Row = memo(function Row({
           <Chip
             size="small"
             label={assetKindUiLabel(position.kind)}
-            color={position.kind === "crypto" ? "secondary" : "primary"}
+            color={kindChipColor(position.kind)}
             variant="outlined"
             sx={{ height: 22, "& .MuiChip-label": { px: 0.75, fontSize: "0.7rem" } }}
           />
@@ -102,7 +109,11 @@ const Row = memo(function Row({
       </TableCell>
       <TableCell align="right">{position.quantity}</TableCell>
       <TableCell align="right">
-        {quote ? formatQuoteMoney(quote.price, quoteCur) : "—"}
+        {quote
+          ? position.kind === "fixed_income"
+            ? `×${quote.price.toFixed(4)}`
+            : formatQuoteMoney(quote.price, quoteCur)
+          : "—"}
       </TableCell>
       <TableCell align="right">
         {value !== null && Number.isFinite(value)
@@ -156,6 +167,7 @@ export const PositionsTable = memo(function PositionsTable({
         kind: p.kind,
         exchange: p.exchange?.trim() || undefined,
         displayName,
+        ...(p.kind === "fixed_income" ? { positionId: p.id } : {}),
       });
     },
     [setSelection],

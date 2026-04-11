@@ -79,6 +79,7 @@ export function Dashboard() {
       kind: p.kind,
       exchange: p.exchange?.trim() || undefined,
       displayName: quoteName || p.name?.trim(),
+      ...(p.kind === "fixed_income" ? { positionId: p.id } : {}),
     });
   }, [portfolio, selection, setSelection, quotes]);
 
@@ -88,21 +89,28 @@ export function Dashboard() {
       selection.kind === "equity"
         ? selection.exchange?.trim().toUpperCase() ?? ""
         : "";
-    const p = portfolio.find((x) => {
-      if (x.kind !== selection.kind) return false;
-      if (
-        x.symbol.trim().toUpperCase() !== selection.symbol.trim().toUpperCase()
-      )
-        return false;
-      if (selection.kind !== "equity") return true;
-      const posEx = x.exchange?.trim().toUpperCase() ?? "";
-      return posEx === selEx;
-    });
-    const key = positionQuoteKey({
-      kind: selection.kind,
-      symbol: selection.symbol,
-      exchange: selection.exchange,
-    });
+    const p =
+      selection.kind === "fixed_income" && selection.positionId
+        ? portfolio.find((x) => x.id === selection.positionId)
+        : portfolio.find((x) => {
+            if (x.kind !== selection.kind) return false;
+            if (
+              x.symbol.trim().toUpperCase() !==
+              selection.symbol.trim().toUpperCase()
+            )
+              return false;
+            if (selection.kind !== "equity") return true;
+            const posEx = x.exchange?.trim().toUpperCase() ?? "";
+            return posEx === selEx;
+          });
+    const key = p
+      ? positionQuoteKey(p)
+      : positionQuoteKey({
+          id: selection.positionId ?? "",
+          kind: selection.kind,
+          symbol: selection.symbol,
+          exchange: selection.exchange,
+        });
     const q = quotes[key];
     const sym = selection.symbol.trim().toUpperCase();
     const fromQuote = q?.displayName?.trim();
@@ -122,6 +130,12 @@ export function Dashboard() {
         const sEx = s.exchange?.trim().toUpperCase() ?? "";
         if (selEx !== sEx) return s;
       }
+      if (
+        selection.kind === "fixed_income" &&
+        selection.positionId &&
+        s.positionId !== selection.positionId
+      )
+        return s;
       return { ...s, displayName: resolved };
     });
   }, [quotes, portfolio, selection, setSelection]);

@@ -1,10 +1,11 @@
 import { fetchBinanceUsdTicker } from "@/lib/api/binance";
 import { fetchCryptoQuoteViaCoingecko } from "@/lib/api/coingecko";
 import { fetchTwelveDataPrice } from "@/lib/api/twelvedata";
-import type { AssetKind, MarketData, QuoteKey } from "@/lib/market-data/types";
+import type { MarketData, QuoteKey } from "@/lib/market-data/types";
 import { positionQuoteKey } from "@/lib/market-data/types";
 import { fetchBcbaListingHtmlQuote } from "@/lib/providers/listing-html-bcba/fetch-listing-quote";
 import type { PortfolioPosition } from "@/lib/portfolio/types";
+import { buildFixedIncomeQuote } from "./build-fixed-income-quote";
 
 async function fetchCryptoQuote(
   symbol: string,
@@ -36,24 +37,18 @@ export async function fetchQuotesForPortfolio(
   positions: PortfolioPosition[],
   signal?: AbortSignal,
 ): Promise<Record<QuoteKey, MarketData>> {
-  const uniq = new Map<
-    QuoteKey,
-    { symbol: string; kind: AssetKind; exchange?: string }
-  >();
+  const uniq = new Map<QuoteKey, PortfolioPosition>();
   for (const p of positions) {
     const k = positionQuoteKey(p);
-    if (!uniq.has(k))
-      uniq.set(k, {
-        symbol: p.symbol,
-        kind: p.kind,
-        exchange: p.exchange,
-      });
+    if (!uniq.has(k)) uniq.set(k, p);
   }
 
   const settled = await Promise.allSettled(
-    [...uniq.values()].map(async (p) => {
-      const k = positionQuoteKey(p);
+    [...uniq.entries()].map(async ([k, p]) => {
       try {
+        if (p.kind === "fixed_income") {
+          return { k, data: buildFixedIncomeQuote(p) } as const;
+        }
         const data =
           p.kind === "equity"
             ? await fetchEquityQuote(p.symbol, p.exchange, signal)

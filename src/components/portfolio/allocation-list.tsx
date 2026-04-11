@@ -5,6 +5,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { AllocationSlice } from "@/lib/calculations/portfolio-kpis";
+import { assetKindUiLabel } from "@/lib/format/asset-kind";
 import { formatQuoteMoney } from "@/lib/format/numbers";
 
 export function AllocationList({
@@ -36,7 +37,7 @@ export function AllocationList({
                 component="span"
                 sx={{ typography: "caption", color: "text.secondary" }}
               >
-                {s.kind}
+                {assetKindUiLabel(s.kind)}
                 {s.exchange ? ` · ${s.exchange}` : ""}
               </Box>
             </Typography>
