@@ -11,6 +11,7 @@ import { useCoingeckoExchangeRates } from "@/lib/queries/use-coingecko-exchange-
 import { PriceChart } from "@/components/charts/price-chart";
 import { AppShell } from "@/components/layout/app-shell";
 import { AllocationList } from "@/components/portfolio/allocation-list";
+import { AllocationPieChart } from "@/components/portfolio/allocation-pie-chart";
 import { KpiCards } from "@/components/portfolio/kpi-cards";
 import { OpportunitiesPanel } from "@/components/portfolio/opportunities-panel";
 import { PositionDialog } from "@/components/portfolio/position-dialog";
@@ -167,9 +168,18 @@ export function Dashboard() {
             <Stack spacing={2}>
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>
-                  Allocation
+                  Asset allocation
                 </Typography>
                 <AllocationList
+                  slices={kpis.allocation}
+                  weightsDisabled={kpis.hasMixedCurrencies}
+                />
+              </Paper>
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>
+                  Asset allocation chart
+                </Typography>
+                <AllocationPieChart
                   slices={kpis.allocation}
                   weightsDisabled={kpis.hasMixedCurrencies}
                 />
