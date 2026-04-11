@@ -1,3 +1,4 @@
+import type { ListingHtmlParsedQuote } from "./listing-html-parsed";
 import type { AssetKind, MarketData, MarketDataSource } from "./types";
 
 export function buildMarketData(input: {
@@ -92,5 +93,23 @@ export function normalizeFromTwelveDataPrice(params: {
     high24h: null,
     low24h: null,
     source: "twelvedata",
+  });
+}
+
+export function normalizeFromListingHtmlQuote(
+  parsed: ListingHtmlParsedQuote,
+): MarketData {
+  const sym = parsed.symbol.toUpperCase();
+  return buildMarketData({
+    symbol: sym,
+    displayName: parsed.displayName?.trim() || sym,
+    kind: "equity",
+    price: parsed.price,
+    currency: parsed.currency,
+    change24hPct: parsed.changeDayPct,
+    volume24h: parsed.volumeNominal,
+    high24h: parsed.highDay,
+    low24h: parsed.lowDay,
+    source: "listing_html",
   });
 }

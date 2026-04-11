@@ -5,7 +5,10 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { PortfolioKpis } from "@/lib/calculations/portfolio-kpis";
-import { formatPercentFromRatio, formatUsd } from "@/lib/format/numbers";
+import {
+  formatPercentFromRatio,
+  formatQuoteMoney,
+} from "@/lib/format/numbers";
 
 function KpiCard({
   label,
@@ -53,7 +56,7 @@ export function KpiCards({
       : "Live 24h change needs quotes";
 
   const mixedHint =
-    "USD and ARS positions cannot be summed; see each row for local currency.";
+    "Mixed quote currencies and FX rates are not ready; totals stay per-row until conversion loads or succeeds.";
 
   return (
     <Grid container spacing={2}>
@@ -63,7 +66,7 @@ export function KpiCards({
           value={
             kpis.hasMixedCurrencies
               ? "—"
-              : formatUsd(kpis.totalValueUsd)
+              : formatQuoteMoney(kpis.totalValue, kpis.displayCurrency)
           }
           hint={kpis.hasMixedCurrencies ? mixedHint : undefined}
         />
@@ -72,7 +75,9 @@ export function KpiCards({
         <KpiCard
           label="Unrealized PnL"
           value={
-            kpis.pnlUsd !== null ? formatUsd(kpis.pnlUsd) : "—"
+            kpis.pnl !== null
+              ? formatQuoteMoney(kpis.pnl, kpis.displayCurrency)
+              : "—"
           }
           hint={
             kpis.hasMixedCurrencies
@@ -85,7 +90,9 @@ export function KpiCards({
         <KpiCard
           label="24h (est.)"
           value={
-            kpis.dayChangeUsd !== null ? formatUsd(kpis.dayChangeUsd) : "—"
+            kpis.dayChange !== null
+              ? formatQuoteMoney(kpis.dayChange, kpis.displayCurrency)
+              : "—"
           }
           hint={
             kpis.hasMixedCurrencies

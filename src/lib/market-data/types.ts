@@ -1,6 +1,11 @@
 export type AssetKind = "crypto" | "equity";
 
-export type MarketDataSource = "coingecko" | "binance" | "twelvedata";
+export type MarketDataSource =
+  | "coingecko"
+  | "binance"
+  | "twelvedata"
+  /** HTML listing page (e.g. BCBA); swappable provider under `src/lib/providers/` */
+  | "listing_html";
 
 /** Normalized snapshot used across the app (UI, KPIs, opportunities). */
 export type MarketData = {

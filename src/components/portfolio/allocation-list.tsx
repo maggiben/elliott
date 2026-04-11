@@ -41,7 +41,7 @@ export function AllocationList({
               </Box>
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {formatQuoteMoney(s.valueUsd, s.currency)}
+              {formatQuoteMoney(s.value, s.currency)}
               {weightsDisabled
                 ? ""
                 : ` · ${(s.weight * 100).toFixed(1)}%`}

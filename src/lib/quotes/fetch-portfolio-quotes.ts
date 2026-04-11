@@ -3,6 +3,7 @@ import { fetchCryptoQuoteViaCoingecko } from "@/lib/api/coingecko";
 import { fetchTwelveDataPrice } from "@/lib/api/twelvedata";
 import type { AssetKind, MarketData, QuoteKey } from "@/lib/market-data/types";
 import { positionQuoteKey } from "@/lib/market-data/types";
+import { fetchBcbaListingHtmlQuote } from "@/lib/providers/listing-html-bcba/fetch-listing-quote";
 import type { PortfolioPosition } from "@/lib/portfolio/types";
 
 async function fetchCryptoQuote(
@@ -16,6 +17,19 @@ async function fetchCryptoQuote(
     /* Binance often blocks browser CORS; CoinGecko is the reliable path */
   }
   return fetchCryptoQuoteViaCoingecko(symbol, signal);
+}
+
+async function fetchEquityQuote(
+  symbol: string,
+  exchange: string | undefined,
+  signal?: AbortSignal,
+): Promise<MarketData | null> {
+  const ex = exchange?.trim().toUpperCase();
+  if (ex === "BCBA") {
+    const fromListing = await fetchBcbaListingHtmlQuote(symbol, signal);
+    if (fromListing) return fromListing;
+  }
+  return fetchTwelveDataPrice(symbol, signal, exchange);
 }
 
 export async function fetchQuotesForPortfolio(
@@ -41,7 +55,7 @@ export async function fetchQuotesForPortfolio(
       const k = positionQuoteKey(p);
       const data =
         p.kind === "equity"
-          ? await fetchTwelveDataPrice(p.symbol, signal, p.exchange)
+          ? await fetchEquityQuote(p.symbol, p.exchange, signal)
           : await fetchCryptoQuote(p.symbol, signal);
       return { k, data } as const;
     }),

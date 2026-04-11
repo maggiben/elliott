@@ -25,14 +25,29 @@ type RowProps = {
   quote?: MarketData;
   onSelect: (p: PortfolioPosition, quote?: MarketData) => void;
   onEdit: (id: string) => void;
+  valueByPositionId?: Record<string, number>;
+  bookDisplayCurrency?: string;
 };
 
-const Row = memo(function Row({ position, quote, onSelect, onEdit }: RowProps) {
-  const value =
+const Row = memo(function Row({
+  position,
+  quote,
+  onSelect,
+  onEdit,
+  valueByPositionId,
+  bookDisplayCurrency,
+}: RowProps) {
+  const nativeValue =
     quote && Number.isFinite(quote.price)
       ? position.quantity * quote.price
       : null;
+  const unified =
+    valueByPositionId !== undefined &&
+    bookDisplayCurrency !== undefined &&
+    valueByPositionId[position.id] !== undefined;
+  const value = unified ? valueByPositionId[position.id] : nativeValue;
   const quoteCur = quote?.currency ?? "USD";
+  const valueCurrency = unified ? bookDisplayCurrency : quoteCur;
   const ch = quote?.change24hPct;
 
   const sym = position.symbol.trim().toUpperCase();
@@ -90,7 +105,9 @@ const Row = memo(function Row({ position, quote, onSelect, onEdit }: RowProps) {
         {quote ? formatQuoteMoney(quote.price, quoteCur) : "—"}
       </TableCell>
       <TableCell align="right">
-        {value !== null ? formatQuoteMoney(value, quoteCur) : "—"}
+        {value !== null && Number.isFinite(value)
+          ? formatQuoteMoney(value, valueCurrency)
+          : "—"}
       </TableCell>
       <TableCell align="right">
         {ch !== null && ch !== undefined && Number.isFinite(ch)
@@ -115,9 +132,14 @@ const Row = memo(function Row({ position, quote, onSelect, onEdit }: RowProps) {
 export const PositionsTable = memo(function PositionsTable({
   positions,
   quotes,
+  valueByPositionId,
+  bookDisplayCurrency,
 }: {
   positions: PortfolioPosition[];
   quotes: Record<string, MarketData | undefined>;
+  /** When the book is unified, holding values in `bookDisplayCurrency`. */
+  valueByPositionId?: Record<string, number>;
+  bookDisplayCurrency?: string;
 }) {
   const setSelection = useSetAtom(chartSelectionAtom);
   const setDialog = useSetAtom(positionDialogAtom);
@@ -176,6 +198,8 @@ export const PositionsTable = memo(function PositionsTable({
               quote={quotes[positionQuoteKey(p)]}
               onSelect={onSelect}
               onEdit={onEdit}
+              valueByPositionId={valueByPositionId}
+              bookDisplayCurrency={bookDisplayCurrency}
             />
           ))}
         </TableBody>

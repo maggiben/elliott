@@ -7,6 +7,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useMemo } from "react";
+import { useCoingeckoExchangeRates } from "@/lib/queries/use-coingecko-exchange-rates";
 import { PriceChart } from "@/components/charts/price-chart";
 import { AppShell } from "@/components/layout/app-shell";
 import { AllocationList } from "@/components/portfolio/allocation-list";
@@ -19,22 +20,40 @@ import { detectOpportunities } from "@/lib/opportunities/rules";
 import { positionQuoteKey } from "@/lib/market-data/types";
 import { usePortfolioQuotes } from "@/lib/queries/use-portfolio-quotes";
 import { portfolioAtom } from "@/state/portfolio-atoms";
-import { chartSelectionAtom } from "@/state/ui-atoms";
+import {
+  chartSelectionAtom,
+  portfolioDisplayCurrencyAtom,
+} from "@/state/ui-atoms";
 
 export function Dashboard() {
   const portfolio = useAtomValue(portfolioAtom);
   const [selection, setSelection] = useAtom(chartSelectionAtom);
+  const displayCurrency = useAtomValue(portfolioDisplayCurrencyAtom);
   const quotesQuery = usePortfolioQuotes(portfolio);
+  const fxQuery = useCoingeckoExchangeRates(portfolio.length > 0);
 
   const quotes = useMemo(
     () => quotesQuery.data ?? {},
     [quotesQuery.data],
   );
 
+  const btcRates = fxQuery.isSuccess ? fxQuery.data : undefined;
+
   const kpis = useMemo(
-    () => computePortfolioKpis(portfolio, quotes),
-    [portfolio, quotes],
+    () =>
+      computePortfolioKpis(portfolio, quotes, {
+        displayCurrency,
+        btcDenominatedRates: btcRates,
+      }),
+    [portfolio, quotes, displayCurrency, btcRates],
   );
+
+  const valueByPositionId = useMemo(() => {
+    if (kpis.hasMixedCurrencies) return undefined;
+    return Object.fromEntries(
+      kpis.allocation.map((s) => [s.id, s.value] as const),
+    );
+  }, [kpis.allocation, kpis.hasMixedCurrencies]);
 
   const opportunities = useMemo(
     () => detectOpportunities(kpis, portfolio, quotes),
@@ -112,7 +131,9 @@ export function Dashboard() {
         <Stack spacing={0.5}>
           <Typography variant="h1">Portfolio</Typography>
           <Typography variant="body2" color="text.secondary">
-            Quotes: CoinGecko and Binance (crypto), TwelveData (equities).
+            Quotes: CoinGecko and Binance (crypto), TwelveData (equities), BCBA
+            listing pages where configured. Book currency uses CoinGecko
+            exchange rates (BTC cross) to align ARS, USD, and other majors.
             Portfolio state stays in your browser.
           </Typography>
         </Stack>
@@ -126,15 +147,20 @@ export function Dashboard() {
         <KpiCards kpis={kpis} positionsCount={portfolio.length} />
 
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, lg: 7 }}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             <Paper variant="outlined" sx={{ p: 2 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>
                 Holdings
               </Typography>
-              <PositionsTable positions={portfolio} quotes={quotes} />
+              <PositionsTable
+                positions={portfolio}
+                quotes={quotes}
+                valueByPositionId={valueByPositionId}
+                bookDisplayCurrency={kpis.displayCurrency}
+              />
             </Paper>
           </Grid>
-          <Grid size={{ xs: 12, lg: 5 }}>
+          <Grid size={{ xs: 12, lg: 4 }}>
             <Stack spacing={2}>
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>

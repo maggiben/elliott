@@ -34,6 +34,8 @@ export const queryKeys = {
 
   symbolSuggestEquity: (q: string) =>
     ["symbol-suggest", "equity", q.toLowerCase()] as const,
+
+  coingeckoExchangeRates: ["coingecko", "exchange_rates"] as const,
 } as const;
 
 export function positionQuoteQueryTag(p: PortfolioPosition) {
