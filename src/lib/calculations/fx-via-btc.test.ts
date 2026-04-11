@@ -23,6 +23,13 @@ describe("convertAmountViaBtcBridge", () => {
     expect(ars).toBeCloseTo(50_000, 5);
   });
 
+  it("converts USD to BTC using BTC-denominated rates", () => {
+    // 1 BTC = 100_000 USD → $50_000 = 0.5 BTC
+    const rates = { usd: 100_000, btc: 1 };
+    const btc = convertAmountViaBtcBridge(50_000, "USD", "BTC", rates);
+    expect(btc).toBeCloseTo(0.5, 5);
+  });
+
   it("returns null when a leg is missing from the rate map", () => {
     const rates = { usd: 100 };
     expect(convertAmountViaBtcBridge(1, "ARS", "USD", rates)).toBeNull();
@@ -56,6 +63,16 @@ describe("portfolioNeedsFxUnification", () => {
         quoteCurrencies: ["ARS"],
         displayCurrency: "ARS",
         hasUsdCostBasis: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("is true when book is BTC but quotes are in fiat", () => {
+    expect(
+      portfolioNeedsFxUnification({
+        quoteCurrencies: ["USD"],
+        displayCurrency: "BTC",
+        hasUsdCostBasis: false,
       }),
     ).toBe(true);
   });

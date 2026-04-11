@@ -9,6 +9,14 @@ export function formatUsd(value: number): string {
 
 export function formatQuoteMoney(value: number, currency: string): string {
   const c = currency.trim().toUpperCase() || "USD";
+  if (c === "BTC") {
+    const abs = Math.abs(value);
+    const maxFrac = abs >= 100 ? 4 : abs >= 1 ? 6 : 8;
+    return `${new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: maxFrac,
+    }).format(value)} BTC`;
+  }
   try {
     return new Intl.NumberFormat(undefined, {
       style: "currency",

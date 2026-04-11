@@ -40,9 +40,19 @@ export type ComputePortfolioKpisOptions = {
   /**
    * CoinGecko `/exchange_rates` map (lowercase keys). Omit or leave unset while
    * rates are still loading when FX unification is required.
+   * A canonical `btc` leg (1 unit of BTC per 1 BTC) is applied when missing so
+   * BTC book currency can convert via the same bridge as fiat.
    */
   btcDenominatedRates?: Record<string, number>;
 };
+
+function exchangeRatesWithCanonicalBtc(
+  rates: Record<string, number>,
+): Record<string, number> {
+  const b = rates.btc;
+  if (typeof b === "number" && Number.isFinite(b) && b > 0) return rates;
+  return { ...rates, btc: 1 };
+}
 
 function positionRawValue(
   p: PortfolioPosition,
@@ -60,7 +70,11 @@ export function computePortfolioKpis(
 ): PortfolioKpis {
   const displayCurrency =
     (options?.displayCurrency ?? "USD").trim().toUpperCase() || "USD";
-  const rates = options?.btcDenominatedRates;
+  const ratesRaw = options?.btcDenominatedRates;
+  const rates =
+    ratesRaw && Object.keys(ratesRaw).length > 0
+      ? exchangeRatesWithCanonicalBtc(ratesRaw)
+      : undefined;
 
   let totalCostUsdBasis = 0;
   let hasCost = false;

@@ -168,7 +168,7 @@ export function Dashboard() {
             <Stack spacing={2}>
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>
-                  Asset allocation
+                  Assets
                 </Typography>
                 <AllocationList
                   slices={kpis.allocation}
@@ -177,7 +177,7 @@ export function Dashboard() {
               </Paper>
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>
-                  Asset allocation chart
+                  Asset concentration
                 </Typography>
                 <AllocationPieChart
                   slices={kpis.allocation}

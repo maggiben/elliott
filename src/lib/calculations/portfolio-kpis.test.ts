@@ -106,4 +106,65 @@ describe("computePortfolioKpis", () => {
     expect(kpis.hasMixedCurrencies).toBe(true);
     expect(kpis.allocation.every((s) => s.weight === 0)).toBe(true);
   });
+
+  it("unifies USD book into BTC when display is BTC and rates are provided", () => {
+    const positions: PortfolioPosition[] = [
+      {
+        id: "a",
+        symbol: "USDC",
+        quantity: 2,
+        kind: "crypto",
+      },
+    ];
+    const quotes: Record<string, MarketData | undefined> = {
+      "crypto:USDC": md({
+        symbol: "USDC",
+        kind: "crypto",
+        price: 50_000,
+        currency: "USD",
+        source: "coingecko",
+      }),
+    };
+    // 1 BTC = 100_000 USD → $100k notional = 1 BTC
+    const rates = { usd: 100_000, btc: 1 };
+
+    const kpis = computePortfolioKpis(positions, quotes, {
+      displayCurrency: "BTC",
+      btcDenominatedRates: rates,
+    });
+
+    expect(kpis.hasMixedCurrencies).toBe(false);
+    expect(kpis.displayCurrency).toBe("BTC");
+    expect(kpis.totalValue).toBeCloseTo(1, 5);
+    expect(kpis.allocation[0]?.currency).toBe("BTC");
+  });
+
+  it("injects canonical btc=1 when the rate map omits btc (BTC book)", () => {
+    const positions: PortfolioPosition[] = [
+      {
+        id: "a",
+        symbol: "USDC",
+        quantity: 1,
+        kind: "crypto",
+      },
+    ];
+    const quotes: Record<string, MarketData | undefined> = {
+      "crypto:USDC": md({
+        symbol: "USDC",
+        kind: "crypto",
+        price: 100_000,
+        currency: "USD",
+        source: "coingecko",
+      }),
+    };
+    const rates = { usd: 100_000 };
+
+    const kpis = computePortfolioKpis(positions, quotes, {
+      displayCurrency: "BTC",
+      btcDenominatedRates: rates,
+    });
+
+    expect(kpis.hasMixedCurrencies).toBe(false);
+    expect(kpis.totalValue).toBeCloseTo(1, 5);
+  });
 });

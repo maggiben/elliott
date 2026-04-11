@@ -19,6 +19,7 @@ const BOOK_CURRENCIES = [
   { code: "EUR", label: "EUR" },
   { code: "GBP", label: "GBP" },
   { code: "BRL", label: "BRL" },
+  { code: "BTC", label: "BTC" },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {

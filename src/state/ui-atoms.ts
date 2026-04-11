@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import type { AssetKind } from "@/lib/market-data/types";
 
-/** ISO 4217 book view (KPIs, allocation, unified position values). */
+/** Book view currency: ISO 4217 codes or BTC (KPIs, allocation, unified values). */
 export const portfolioDisplayCurrencyAtom = atom<string>("USD");
 
 export const chartDaysAtom = atom<7 | 30 | 90>(7);
