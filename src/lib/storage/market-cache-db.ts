@@ -173,3 +173,73 @@ export async function replaceExchangeRatesCache(
 export function invalidateElliottMarketCacheDbConnection(): void {
   dbPromise = null;
 }
+
+const NET_WORTH_HISTORY_KEY = "net-worth-history-v1";
+
+/** One observed book-total sample (local only; no historical market API). */
+export type NetWorthHistoryPoint = {
+  t: number;
+  value: number;
+  /** Uppercased book currency at sample time. */
+  currency: string;
+};
+
+export function utcDayKey(ms: number): string {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+/**
+ * Keeps at most one point per UTC calendar day (latest wins for that day),
+ * sorted by time ascending, capped at `maxPoints` (oldest dropped).
+ */
+export function mergeNetWorthDailySample(
+  existing: NetWorthHistoryPoint[],
+  next: NetWorthHistoryPoint,
+  opts: { maxPoints: number },
+): NetWorthHistoryPoint[] {
+  const day = utcDayKey(next.t);
+  const withoutDay = existing.filter((p) => utcDayKey(p.t) !== day);
+  const merged = [...withoutDay, next].sort((a, b) => a.t - b.t);
+  if (merged.length > opts.maxPoints) {
+    return merged.slice(merged.length - opts.maxPoints);
+  }
+  return merged;
+}
+
+function isNetWorthHistoryPoint(x: unknown): x is NetWorthHistoryPoint {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return (
+    typeof o.t === "number" &&
+    Number.isFinite(o.t) &&
+    typeof o.value === "number" &&
+    Number.isFinite(o.value) &&
+    typeof o.currency === "string" &&
+    o.currency.trim().length > 0
+  );
+}
+
+export async function loadNetWorthHistory(): Promise<NetWorthHistoryPoint[]> {
+  try {
+    const db = await getDb();
+    const raw = await db.get(STORE, NET_WORTH_HISTORY_KEY);
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(isNetWorthHistoryPoint).map((p) => ({
+      ...p,
+      currency: p.currency.trim().toUpperCase(),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function saveNetWorthHistory(
+  points: NetWorthHistoryPoint[],
+): Promise<void> {
+  try {
+    const db = await getDb();
+    await db.put(STORE, points, NET_WORTH_HISTORY_KEY);
+  } catch {
+    /* ignore */
+  }
+}

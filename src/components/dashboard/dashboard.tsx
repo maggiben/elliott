@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useMemo } from "react";
 import { useCoingeckoExchangeRates } from "@/lib/queries/use-coingecko-exchange-rates";
+import { NetWorthChart } from "@/components/charts/net-worth-chart";
 import { PriceChart } from "@/components/charts/price-chart";
 import { AppShell } from "@/components/layout/app-shell";
 import { AllocationList } from "@/components/portfolio/allocation-list";
@@ -19,6 +20,7 @@ import { PositionsTable } from "@/components/portfolio/positions-table";
 import { computePortfolioKpis } from "@/lib/calculations/portfolio-kpis";
 import { detectOpportunities } from "@/lib/opportunities/rules";
 import { positionQuoteKey } from "@/lib/market-data/types";
+import { useNetWorthHistoryObserved } from "@/lib/queries/use-net-worth-history";
 import { usePortfolioQuotes } from "@/lib/queries/use-portfolio-quotes";
 import { portfolioAtom } from "@/state/portfolio-atoms";
 import {
@@ -59,6 +61,12 @@ export function Dashboard() {
   const opportunities = useMemo(
     () => detectOpportunities(kpis, portfolio, quotes),
     [kpis, portfolio, quotes],
+  );
+
+  const netWorthHistoryPoints = useNetWorthHistoryObserved(
+    kpis,
+    portfolio.length,
+    quotesQuery.isSuccess,
   );
 
   useEffect(() => {
@@ -163,6 +171,13 @@ export function Dashboard() {
         ) : null}
 
         <KpiCards kpis={kpis} positionsCount={portfolio.length} />
+
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          <NetWorthChart
+            points={netWorthHistoryPoints}
+            displayCurrency={displayCurrency}
+          />
+        </Paper>
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, lg: 9 }}>
