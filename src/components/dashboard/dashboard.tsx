@@ -13,6 +13,7 @@ import { PriceChart } from "@/components/charts/price-chart";
 import { AppShell } from "@/components/layout/app-shell";
 import { AllocationList } from "@/components/portfolio/allocation-list";
 import { AllocationPieChart } from "@/components/portfolio/allocation-pie-chart";
+import { PortfolioTreemap } from "@/components/portfolio/portfolio-treemap";
 import { KpiCards } from "@/components/portfolio/kpi-cards";
 import { OpportunitiesPanel } from "@/components/portfolio/opportunities-panel";
 import { PositionDialog } from "@/components/portfolio/position-dialog";
@@ -225,6 +226,15 @@ export function Dashboard() {
 
         <Paper variant="outlined" sx={{ p: 2 }}>
           <PriceChart />
+        </Paper>
+
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          <PortfolioTreemap
+            portfolio={portfolio}
+            quotes={quotes}
+            slices={kpis.allocation}
+            hasMixedCurrencies={kpis.hasMixedCurrencies}
+          />
         </Paper>
       </Stack>
       <PositionDialog />
