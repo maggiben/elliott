@@ -5,29 +5,29 @@
 </p>
 
 <p align="center">
-Elliott, a private portfolio tracker 💼
+Elliott — your portfolio, on your device 💼
 </p>
 </div>
 
 
-Production-oriented **portfolio tracker** in the browser: holdings in **IndexedDB**, live quotes from **CoinGecko**, **Binance**, and **TwelveData**, UI built with **Next.js (App Router)**, **Material UI**, **Jotai**, and **TanStack Query**. Charts use **TradingView Lightweight Charts**.
+**Elliott** is a simple way to see everything you hold in one view: stocks, crypto, and savings you describe yourself (like a term deposit). What you type in stays on **your computer or phone**—there is no Elliott account database of your positions. The app only reaches out to **public** price sources so the numbers can update; you stay in control of what gets stored locally.
 
 ## Documentation
 
 | Doc | Purpose |
 |-----|---------|
-| [docs/architecture.md](./docs/architecture.md) | System design, state split, data flow, folder map |
-| [docs/constraints.md](./docs/constraints.md) | Hard rules (no backend/DB, public APIs only, client persistence) |
-| [AGENTS.md](./AGENTS.md) | Notes for AI agents and contributors (stack + conventions) |
+| [docs/architecture.md](./docs/architecture.md) | How state, persistence, and market data fit together |
+| [docs/constraints.md](./docs/constraints.md) | Hard rules (no app backend, client-side data, allowed sources) |
+| [AGENTS.md](./AGENTS.md) | Notes for contributors and coding agents (stack + conventions) |
 
 ## Tech stack
 
 - Next.js **16+** (App Router), TypeScript **strict**, React 19  
-- Material UI **9** + Emotion + `@mui/material-nextjs` (v16 App Router cache)  
+- Material UI **9** + Emotion + `@mui/material-nextjs` (App Router integration)  
 - **Jotai** — portfolio + UI state  
-- **TanStack Query** — all network caching/refetch  
-- **idb** — IndexedDB wrapper  
-- **lightweight-charts** — TradingView charting library  
+- **TanStack Query** — network caching and refetch for quotes and charts  
+- **idb** — IndexedDB (portfolio + cached quote snapshots)  
+- **lightweight-charts** — price charts  
 
 ## Getting started
 
@@ -40,29 +40,36 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Environment
 
-Copy `env.example` to `.env.local` if you use TwelveData beyond the public demo key:
+Copy `env.example` to `.env.local` and set only what you need:
 
 ```bash
 cp env.example .env.local
-# Edit NEXT_PUBLIC_TWELVEDATA_API_KEY
 ```
+
+| Variable | Why |
+|----------|-----|
+| `NEXT_PUBLIC_TWELVEDATA_API_KEY` | Stronger equity quotes/charts than the public demo key |
+| `NEXT_PUBLIC_CORSFIX_API_KEY` | Helps load **BCBA** listing pages from the browser when plain `fetch` is blocked |
+| `NEXT_PUBLIC_BCBA_IOL_CHARTS` | Set to `0` to skip IOL chart fetch for BCBA (TwelveData-only path) |
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Development server (Turbopack) |
+| `npm run dev` | Development server |
 | `npm run build` | Production build |
-| `npm run start` | Start production server |
+| `npm run start` | Production server |
 | `npm run lint` | ESLint |
+| `npm run test` | Vitest (unit tests) |
 
 ## Features (current)
 
-1. Portfolio **CRUD** with client persistence  
-2. **Live prices** (polling + cache)  
-3. **KPIs**: value, optional PnL vs average cost, estimated 24h change, allocation  
-4. **Charts** per selected holding (crypto vs equity data sources)  
-5. **Opportunity detection** via simple, documented rules  
+1. Portfolio **add / edit / delete** with automatic save in the browser  
+2. **Live-style prices** (polling + optional IndexedDB cache for last-known values)  
+3. **KPIs**: total value, optional gain/loss vs average cost, estimated 24h change, allocation  
+4. **Charts** per holding (crypto and equity sources; BCBA has an optional history path)  
+5. **Opportunity hints** from small, documented rules (concentration, moves, drawdown vs cost)  
+6. **Fixed income** positions modeled from your own rate and dates (no external feed)  
 
 ## License
 

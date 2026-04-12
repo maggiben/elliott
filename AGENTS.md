@@ -10,16 +10,14 @@ Use this file together with **[docs/architecture.md](./docs/architecture.md)** a
 
 ## Product summary
 
-**Elliott** is a client-only portfolio tracker: no backend, no server database. Portfolio rows live in **Jotai** and **IndexedDB**; market data is fetched via **React Query** from **CoinGecko**, **Binance**, **TwelveData**, then normalized to **`MarketData`**.
+**Elliott** is a client-only portfolio tracker: no backend, no server database. Portfolio rows live in **Jotai** and **IndexedDB**. Market data is fetched via **React Query** from **CoinGecko**, **Binance**, and **TwelveData**, normalized to **`MarketData`**. **BCBA** equities may use **public listing HTML** (see `src/lib/providers/listing-html-bcba/`), optionally via **Corsfix** for browser CORS. **Fixed income** rows produce **synthetic** quotes from user-entered rate and dates. Last-known quotes and FX helpers can persist in **IndexedDB** (`market-cache-db.ts`).
 
 ## Non-negotiable constraints
 
 - **No backend** for core behavior; no app-owned database.
 - **All durable user data client-side** (IndexedDB preferred).
-- **Only** CoinGecko, Binance (public), TwelveData
+- **Allowed data paths** per [docs/constraints.md](./docs/constraints.md) — do not add vendors or private APIs without revising constraints.
 - **Separate** portfolio state (Jotai), market data (React Query + normalized model), UI state (Jotai).
-
-Full list: [docs/constraints.md](./docs/constraints.md).
 
 ## Where to change what
 
@@ -27,11 +25,12 @@ Full list: [docs/constraints.md](./docs/constraints.md).
 |------|----------|
 | Portfolio shape / CRUD helpers | `src/lib/portfolio/` |
 | Jotai atoms | `src/state/portfolio-atoms.ts`, `src/state/ui-atoms.ts` |
-| IndexedDB schema / keys | `src/lib/storage/portfolio-db.ts` |
+| IndexedDB schema / keys | `src/lib/storage/portfolio-db.ts`, `src/lib/storage/market-cache-db.ts` |
 | Unified market types | `src/lib/market-data/types.ts` |
 | API → `MarketData` mapping | `src/lib/market-data/normalize.ts` |
-| Raw HTTP | `src/lib/api/*.ts` |
-| Quote orchestration | `src/lib/quotes/fetch-portfolio-quotes.ts` |
+| Raw HTTP + Corsfix | `src/lib/api/*.ts` |
+| Listing HTML providers (BCBA) | `src/lib/providers/listing-html-bcba/` |
+| Quote orchestration | `src/lib/quotes/fetch-portfolio-quotes.ts`, `build-fixed-income-quote.ts` |
 | React Query keys / hooks | `src/lib/queries/` |
 | KPI math | `src/lib/calculations/portfolio-kpis.ts` |
 | Opportunity rules | `src/lib/opportunities/rules.ts` |
@@ -44,12 +43,13 @@ Full list: [docs/constraints.md](./docs/constraints.md).
 - **Components**: keep them small and composable; dashboard orchestrates, it should not own low-level fetch logic.
 - **MUI v9**: layout props often belong in **`sx`** (e.g. `Box`, `Stack` flex) rather than deprecated system props on some components.
 - **Re-renders**: memoize heavy children where it matters (`memo`, `useMemo` for derived maps like `quotes`).
-- **Secrets**: never put private keys in `NEXT_PUBLIC_*`; Elliott only exposes optional TwelveData key because there is no server vault.
+- **Secrets**: never put private keys in `NEXT_PUBLIC_*`; optional keys (TwelveData, Corsfix) are browser-exposed by necessity—document tradeoffs, never treat them as vault storage.
 
 ## APIs and browser limits
 
 - Expect **Binance** to often fail from the browser (**CORS**); **CoinGecko** is the reliable crypto path.
 - **TwelveData** equity charts/quotes may rate-limit or fail with the demo key; UI should stay usable.
+- **BCBA listing HTML** may depend on **Corsfix** and parser stability; keep vendor-specific logic in `lib/providers/` so it can be replaced.
 
 ## Verification
 
