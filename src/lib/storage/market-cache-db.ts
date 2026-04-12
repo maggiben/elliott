@@ -153,3 +153,23 @@ export async function saveChartSeriesForKey(
     /* ignore */
   }
 }
+
+/** Replaces the entire quotes snapshot (e.g. after restoring a backup). */
+export async function replaceQuotesCache(
+  entries: Record<QuoteKey, MarketData>,
+): Promise<void> {
+  const db = await getDb();
+  await db.put(STORE, entries, QUOTES_CACHE_KEY);
+}
+
+/** Replaces cached FX table used for book-currency conversion. */
+export async function replaceExchangeRatesCache(
+  rates: Record<string, number>,
+): Promise<void> {
+  const db = await getDb();
+  await db.put(STORE, rates, EXCHANGE_RATES_KEY);
+}
+
+export function invalidateElliottMarketCacheDbConnection(): void {
+  dbPromise = null;
+}

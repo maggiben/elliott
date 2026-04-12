@@ -11,6 +11,7 @@ import Select from "@mui/material/Select";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { useAtom, useSetAtom } from "jotai";
+import { DataBackupMenu } from "@/components/layout/data-backup-menu";
 import { positionDialogAtom, portfolioDisplayCurrencyAtom } from "@/state/ui-atoms";
 
 const BOOK_CURRENCIES = [
@@ -62,6 +63,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               ))}
             </Select>
           </FormControl>
+          <DataBackupMenu />
           <Button
             variant="contained"
             onClick={() =>

@@ -83,3 +83,13 @@ export async function savePortfolioToIdb(
   const db = await getDb();
   await db.put(STORE, positions, PORTFOLIO_KEY);
 }
+
+/** Same normalization as IndexedDB load; use when importing JSON backups. */
+export function normalizeStoredPosition(row: unknown): PortfolioPosition | null {
+  return migrateRow(row);
+}
+
+/** Call after `deleteDB("elliott-portfolio")` so the next open uses a fresh connection. */
+export function invalidateElliottPortfolioDbConnection(): void {
+  dbPromise = null;
+}
