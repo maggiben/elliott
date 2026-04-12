@@ -51,6 +51,20 @@ export function updatePosition(
       delete next.fixedIncomeMaturityDate;
       delete next.fixedIncomeCurrency;
     }
+    if (next.kind !== "crypto") {
+      delete next.cryptoApyPct;
+    } else if ("cryptoApyPct" in patch) {
+      const y = patch.cryptoApyPct;
+      if (
+        y === undefined ||
+        y === null ||
+        (typeof y === "number" && !Number.isFinite(y))
+      ) {
+        delete next.cryptoApyPct;
+      } else {
+        next.cryptoApyPct = y;
+      }
+    }
     if (next.kind === "fixed_income") {
       delete next.exchange;
     }

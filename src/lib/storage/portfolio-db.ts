@@ -23,14 +23,23 @@ function getDb(): Promise<IDBPDatabase> {
 
 const PORTFOLIO_KEY = "portfolio-v1";
 
-type LegacyRow = PortfolioPosition & { label?: string };
+type LegacyRow = PortfolioPosition & {
+  label?: string;
+  cryptoYieldAnnualPct?: number;
+  cryptoApyAnnualPct?: number;
+};
 
 function migrateRow(row: unknown): PortfolioPosition | null {
   if (!row || typeof row !== "object") return null;
   const r = row as LegacyRow;
   if (typeof r.id !== "string" || typeof r.symbol !== "string") return null;
 
-  const { label, ...rest } = r;
+  const {
+    label,
+    cryptoYieldAnnualPct: legacyYieldPct,
+    cryptoApyAnnualPct: priorApyPct,
+    ...rest
+  } = r;
   const legacyPathKey = "i" + "ol" + "CotizacionPath";
   if (legacyPathKey in rest) {
     delete (rest as Record<string, unknown>)[legacyPathKey];
@@ -40,11 +49,23 @@ function migrateRow(row: unknown): PortfolioPosition | null {
     (typeof label === "string" && label.trim()) ||
     undefined;
 
-  return {
+  const mergedApy = r.cryptoApyPct ?? priorApyPct ?? legacyYieldPct;
+
+  const next: PortfolioPosition = {
     ...rest,
     symbol: normalizePortfolioSymbol(r.symbol),
     ...(nameFromLegacy ? { name: nameFromLegacy } : {}),
   };
+  if (
+    mergedApy !== undefined &&
+    typeof mergedApy === "number" &&
+    Number.isFinite(mergedApy)
+  ) {
+    next.cryptoApyPct = mergedApy;
+  } else {
+    delete next.cryptoApyPct;
+  }
+  return next;
 }
 
 export async function loadPortfolioFromIdb(): Promise<PortfolioPosition[]> {

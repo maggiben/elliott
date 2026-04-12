@@ -11,6 +11,8 @@ export type PortfolioPosition = {
   name?: string;
   /** Listing venue (e.g. TwelveData exchange for equities); optional */
   exchange?: string;
+  /** Manual APY as points (e.g. 5 → 5%). `kind: "crypto"` only; not from feeds. */
+  cryptoApyPct?: number;
   /**
    * Term deposit / plazo fijo (`kind: "fixed_income"`): principal in `quantity`,
    * nominal annual rate (TNA) in percent, ISO `YYYY-MM-DD` dates, position currency.

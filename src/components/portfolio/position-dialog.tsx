@@ -45,6 +45,8 @@ type FormState = {
   fixedIncomeStartDate: string;
   fixedIncomeMaturityDate: string;
   fixedIncomeCurrency: string;
+  /** Manual APY for crypto positions (points). */
+  cryptoApyPct: string;
 };
 
 const emptyForm: FormState = {
@@ -58,6 +60,7 @@ const emptyForm: FormState = {
   fixedIncomeStartDate: "",
   fixedIncomeMaturityDate: "",
   fixedIncomeCurrency: "ARS",
+  cryptoApyPct: "",
 };
 
 function parseNum(s: string): number | null {
@@ -86,6 +89,10 @@ function initialForm(
     fixedIncomeStartDate: p.fixedIncomeStartDate ?? "",
     fixedIncomeMaturityDate: p.fixedIncomeMaturityDate ?? "",
     fixedIncomeCurrency: p.fixedIncomeCurrency ?? "ARS",
+    cryptoApyPct:
+      p.kind === "crypto" && p.cryptoApyPct !== undefined
+        ? String(p.cryptoApyPct)
+        : "",
   };
 }
 
@@ -145,6 +152,18 @@ function PositionDialogInner({
     const exchangeTrim = form.exchange.trim();
     const exchange = exchangeTrim || undefined;
 
+    let apyPoints: number | undefined;
+    if (form.kind === "crypto") {
+      const raw = form.cryptoApyPct.trim();
+      if (raw) {
+        const y = parseNum(raw);
+        if (y === null || y < 0) return;
+        apyPoints = y;
+      } else {
+        apyPoints = undefined;
+      }
+    }
+
     if (form.kind === "fixed_income") {
       const rate = parseNum(form.fixedIncomeAnnualRatePct.trim());
       const start = form.fixedIncomeStartDate.trim();
@@ -197,6 +216,9 @@ function PositionDialogInner({
           avgCostUsd: avgCostUsd ?? undefined,
           name: form.name.trim() || undefined,
           exchange,
+          ...(form.kind === "crypto" && apyPoints !== undefined
+            ? { cryptoApyPct: apyPoints }
+            : {}),
         }),
       );
     } else if (editing) {
@@ -208,6 +230,9 @@ function PositionDialogInner({
           avgCostUsd: avgCostUsd ?? undefined,
           name: form.name.trim() || undefined,
           exchange,
+          ...(form.kind === "crypto"
+            ? { cryptoApyPct: apyPoints }
+            : {}),
         }),
       );
     }
@@ -232,6 +257,7 @@ function PositionDialogInner({
       fixedIncomeStartDate: "",
       fixedIncomeMaturityDate: "",
       fixedIncomeCurrency: "ARS",
+      cryptoApyPct: "",
     }));
     setSymbolInput("");
     setDebouncedQuery("");
@@ -433,6 +459,22 @@ function PositionDialogInner({
                   ? "TwelveData exchange code when needed (e.g. BCBA for local listings)."
                   : "e.g. a specific venue; crypto quotes use aggregated spot prices."
               }
+            />
+          ) : null}
+          {form.kind === "crypto" ? (
+            <TextField
+              label="APY"
+              value={form.cryptoApyPct}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  cryptoApyPct: e.target.value,
+                }))
+              }
+              type="number"
+              fullWidth
+              slotProps={{ htmlInput: { min: 0, step: "any" } }}
+              helperText="Staking, earn, or exchange—your figure; not from market quotes."
             />
           ) : null}
           {form.kind === "fixed_income" ? (

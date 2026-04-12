@@ -66,6 +66,12 @@ const Row = memo(function Row({
       : undefined;
   const subtitle = storedName || quoteName;
   const exchange = position.exchange?.trim();
+  const apy =
+    position.kind === "crypto" &&
+    position.cryptoApyPct !== undefined &&
+    Number.isFinite(position.cryptoApyPct)
+      ? position.cryptoApyPct
+      : null;
 
   return (
     <TableRow
@@ -119,6 +125,9 @@ const Row = memo(function Row({
         {value !== null && Number.isFinite(value)
           ? formatQuoteMoney(value, valueCurrency)
           : "—"}
+      </TableCell>
+      <TableCell align="right">
+        {apy !== null ? formatPercentPoints(apy) : "—"}
       </TableCell>
       <TableCell align="right">
         {ch !== null && ch !== undefined && Number.isFinite(ch)
@@ -198,6 +207,7 @@ export const PositionsTable = memo(function PositionsTable({
             <TableCell align="right">Qty</TableCell>
             <TableCell align="right">Price</TableCell>
             <TableCell align="right">Value</TableCell>
+            <TableCell align="right">APY</TableCell>
             <TableCell align="right">24h</TableCell>
             <TableCell align="right" />
           </TableRow>

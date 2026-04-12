@@ -165,7 +165,7 @@ export function Dashboard() {
         <KpiCards kpis={kpis} positionsCount={portfolio.length} />
 
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, lg: 8 }}>
+          <Grid size={{ xs: 12, lg: 9 }}>
             <Paper variant="outlined" sx={{ p: 2 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>
                 Holdings
@@ -178,7 +178,7 @@ export function Dashboard() {
               />
             </Paper>
           </Grid>
-          <Grid size={{ xs: 12, lg: 4 }}>
+          <Grid size={{ xs: 12, lg: 3 }}>
             <Stack spacing={2}>
               <Paper variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }} gutterBottom>

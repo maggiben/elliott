@@ -1,4 +1,14 @@
-# Elliott
+<div align="center">
+<br>
+<p align="center">
+<img src="docs/elliott.jpg" alt="Elliott" height="124" />
+</p>
+
+<p align="center">
+Elliott, a private portfolio tracker 💼
+</p>
+</div>
+
 
 Production-oriented **portfolio tracker** in the browser: holdings in **IndexedDB**, live quotes from **CoinGecko**, **Binance**, and **TwelveData**, UI built with **Next.js (App Router)**, **Material UI**, **Jotai**, and **TanStack Query**. Charts use **TradingView Lightweight Charts**.
 
