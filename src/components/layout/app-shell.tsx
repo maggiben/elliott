@@ -41,9 +41,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }}
       >
         <Toolbar sx={{ gap: 2 }}>
-          <Typography variant="h2" sx={{ fontSize: "1.1rem", flexGrow: 1 }}>
-            Elliott
-          </Typography>
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              alignItems: "center",
+              gap: 1.25,
+              minWidth: 0,
+            }}
+          >
+            <Box
+              component="img"
+              src="/logo.svg"
+              alt=""
+              width={28}
+              height={28}
+              sx={{
+                height: 28,
+                width: 28,
+                flexShrink: 0,
+                objectFit: "contain",
+              }}
+            />
+            <Typography variant="h2" sx={{ fontSize: "1.1rem" }}>
+              Elliott
+            </Typography>
+          </Box>
           <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
             Client-only · IndexedDB
           </Typography>
