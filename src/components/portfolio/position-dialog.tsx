@@ -443,7 +443,7 @@ function PositionDialogInner({
           <Typography variant="caption" color="text.secondary">
             {form.kind === "fixed_income"
               ? "Value = principal × (1 + TNA × days/365), simple interest, from your dates (no market feed)."
-              : "Search and quotes: CoinGecko / Binance (crypto), TwelveData (equities)."}
+              : "Search and quotes: CoinGecko / Binance (crypto); equities use InvertirOnline when exchange is in NEXT_PUBLIC_IOL_LISTING_EXCHANGES (defaults include NYSE, NASDAQ, BCBA), else TwelveData."}
           </Typography>
           {symbolField}
           {form.kind !== "fixed_income" ? (
@@ -456,7 +456,7 @@ function PositionDialogInner({
               fullWidth
               helperText={
                 form.kind === "equity"
-                  ? "TwelveData exchange code when needed (e.g. BCBA for local listings)."
+                  ? "Set exchange to an IOL-supported venue (see README: default list includes NYSE, NASDAQ, BCBA) for InvertirOnline quotes/charts; others use TwelveData."
                   : "e.g. a specific venue; crypto quotes use aggregated spot prices."
               }
             />

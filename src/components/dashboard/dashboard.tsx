@@ -153,13 +153,7 @@ export function Dashboard() {
     <AppShell>
       <Stack spacing={3}>
         <Stack spacing={0.5}>
-          <Typography variant="h1">Portfolio</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Quotes: CoinGecko and Binance (crypto), TwelveData (equities), BCBA
-            listing pages where configured. Book currency uses CoinGecko
-            exchange rates (BTC cross) to align ARS, USD, and other majors.
-            Portfolio state stays in your browser.
-          </Typography>
+          <Typography variant="h1">💼 Portfolio</Typography>
         </Stack>
 
         {quotesQuery.isError ? (

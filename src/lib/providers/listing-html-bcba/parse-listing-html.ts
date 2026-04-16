@@ -42,6 +42,17 @@ function detectListingCurrencyFromUltimoCell(inner: string): "ARS" | "USD" {
   return "ARS";
 }
 
+function listingCurrency(
+  inner: string,
+  listingExchange?: string,
+): "ARS" | "USD" {
+  const ex = listingExchange?.trim().toUpperCase();
+  /** BCBA can be ARS or USD (cell markers); other IOL international listings are USD-priced. */
+  if (ex === "BCBA") return detectListingCurrencyFromUltimoCell(inner);
+  if (ex) return "USD";
+  return detectListingCurrencyFromUltimoCell(inner);
+}
+
 function parseVariacionPct(html: string): number | null {
   const inner = captureGroup(
     html,
@@ -91,6 +102,7 @@ function parseDisplayName(html: string): string | null {
 export function parseListingHtmlQuote(
   html: string,
   symbol: string,
+  listingExchange?: string,
 ): ListingHtmlParsedQuote | null {
   const ultimo = parseUltimoPrecioBlock(html);
   if (!ultimo) return null;
@@ -98,7 +110,7 @@ export function parseListingHtmlQuote(
   return {
     symbol: sym,
     displayName: parseDisplayName(html),
-    currency: detectListingCurrencyFromUltimoCell(ultimo.inner),
+    currency: listingCurrency(ultimo.inner, listingExchange),
     price: ultimo.price,
     changeDayPct: parseVariacionPct(html),
     volumeNominal: parseVolumenNominal(html),

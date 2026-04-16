@@ -146,3 +146,44 @@ export function layoutSquarifiedTreemap<T extends SquarifyMutable>(
   const parent = { value: sum, children: positive };
   squarifyRatio(ratio, parent, x0, y0, x1, y1);
 }
+
+export type SquarifyFloorOptions = {
+  /** Each positive item is at least this fraction of the pre-boost sum (capped per count). */
+  minValueShareOfTotal?: number;
+  ratio?: number;
+};
+
+/**
+ * Same as {@link layoutSquarifiedTreemap}, but temporarily bumps each positive
+ * item's weight to at least a floor share of the sibling sum so very small
+ * siblings (e.g. one small exchange) still get enough area for labels.
+ * Restores each item's `.value` after layout.
+ */
+export function layoutSquarifiedTreemapWithFloor<T extends SquarifyMutable>(
+  items: T[],
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  options?: SquarifyFloorOptions,
+): void {
+  const minShare = options?.minValueShareOfTotal ?? 0.055;
+  const ratio = options?.ratio ?? SQUARIFY_PHI;
+  const positive = items.filter((i) => i.value > 0);
+  const sum = positive.reduce((a, b) => a + b.value, 0);
+  if (positive.length === 0 || sum <= 0) return;
+
+  const n = positive.length;
+  const floor = sum * Math.min(minShare, 0.42 / Math.max(n, 1));
+
+  const snapshots = items.map((i) => i.value);
+  for (const i of positive) {
+    i.value = Math.max(i.value, floor);
+  }
+
+  layoutSquarifiedTreemap(items, x0, y0, x1, y1, ratio);
+
+  for (let i = 0; i < items.length; i++) {
+    items[i]!.value = snapshots[i]!;
+  }
+}

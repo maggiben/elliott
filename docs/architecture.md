@@ -21,7 +21,7 @@ flowchart TB
     CG[CoinGecko]
     BN[Binance]
     TD[TwelveData]
-    List[Listing HTML BCBA]
+    List[IOL listing (env venues)]
     CF[Corsfix proxy]
   end
   Dashboard --> JotaiPortfolio
@@ -53,7 +53,7 @@ Portfolio mutations go through **pure helpers** in `src/lib/portfolio/mutations.
 1. **Raw fetch** — `src/lib/api/coingecko.ts`, `binance.ts`, `twelvedata.ts`, plus `src/lib/api/corsfix.ts` when a URL must be loaded cross-origin.
 2. **Orchestration** — `src/lib/quotes/fetch-portfolio-quotes.ts`:
    - **Crypto**: Binance → CoinGecko fallback.
-   - **Equity**: if `exchange === "BCBA"`, try **listing HTML** (`fetchBcbaListingHtmlQuote`) then **TwelveData**.
+   - **Equity**: if `exchange` is in **`NEXT_PUBLIC_IOL_LISTING_EXCHANGES`** (default includes BCBA, NYSE, NASDAQ, AMEX, ARCA, BATS), try **IOL listing HTML** (`fetchIolListingHtmlQuote`) then **TwelveData**.
    - **Fixed income**: synthetic quote from user inputs (`build-fixed-income-quote.ts`).
 3. **Normalization** — `src/lib/market-data/normalize.ts` builds `MarketData` (price, optional 24h %, source, `externalId` for charts when available). Listing HTML uses `normalizeFromListingHtmlQuote`.
 4. **Addressing quotes** — `quoteKey` / `positionQuoteKey` in `src/lib/market-data/types.ts` keys the quote map; fixed income uses `fixed_income:${positionId}` so multiple deposits do not collide.
@@ -75,7 +75,7 @@ Portfolio mutations go through **pure helpers** in `src/lib/portfolio/mutations.
 
 - **Shell**: `src/components/layout/app-shell.tsx` — app bar, primary actions.
 - **Dashboard**: `src/components/dashboard/dashboard.tsx` — wires KPIs, table, allocation, opportunities, chart.
-- **Charts**: TradingView **Lightweight Charts** in `src/components/charts/price-chart.tsx` (client-only chart lifecycle). BCBA history may use provider-specific series under `src/lib/providers/listing-html-bcba/`.
+- **Charts**: TradingView **Lightweight Charts** in `src/components/charts/price-chart.tsx` (client-only chart lifecycle). For IOL-configured exchanges, history may use IOL UDF series under `src/lib/providers/listing-html-bcba/`.
 
 ## Folder map
 

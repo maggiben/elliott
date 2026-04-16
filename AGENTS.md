@@ -10,7 +10,7 @@ Use this file together with **[docs/architecture.md](./docs/architecture.md)** a
 
 ## Product summary
 
-**Elliott** is a client-only portfolio tracker: no backend, no server database. Portfolio rows live in **Jotai** and **IndexedDB**. Market data is fetched via **React Query** from **CoinGecko**, **Binance**, and **TwelveData**, normalized to **`MarketData`**. **BCBA** equities may use **public listing HTML** (see `src/lib/providers/listing-html-bcba/`), optionally via **Corsfix** for browser CORS. **Fixed income** rows produce **synthetic** quotes from user-entered rate and dates. Last-known quotes and FX helpers can persist in **IndexedDB** (`market-cache-db.ts`).
+**Elliott** is a client-only portfolio tracker: no backend, no server database. Portfolio rows live in **Jotai** and **IndexedDB**. Market data is fetched via **React Query** from **CoinGecko**, **Binance**, and **TwelveData**, normalized to **`MarketData`**. Equities whose **exchange** is listed in **`NEXT_PUBLIC_IOL_LISTING_EXCHANGES`** (defaults include BCBA, NYSE, NASDAQ, AMEX, ARCA, BATS) may use **InvertirOnline** public listing HTML and UDF history (see `src/lib/providers/listing-html-bcba/`), optionally via **Corsfix** for browser CORS. **Fixed income** rows produce **synthetic** quotes from user-entered rate and dates. Last-known quotes and FX helpers can persist in **IndexedDB** (`market-cache-db.ts`).
 
 ## Non-negotiable constraints
 
@@ -29,7 +29,7 @@ Use this file together with **[docs/architecture.md](./docs/architecture.md)** a
 | Unified market types | `src/lib/market-data/types.ts` |
 | API → `MarketData` mapping | `src/lib/market-data/normalize.ts` |
 | Raw HTTP + Corsfix | `src/lib/api/*.ts` |
-| Listing HTML providers (BCBA) | `src/lib/providers/listing-html-bcba/` |
+| IOL listing / UDF providers (env-driven exchange list) | `src/lib/providers/listing-html-bcba/` |
 | Quote orchestration | `src/lib/quotes/fetch-portfolio-quotes.ts`, `build-fixed-income-quote.ts` |
 | React Query keys / hooks | `src/lib/queries/` |
 | KPI math | `src/lib/calculations/portfolio-kpis.ts` |
@@ -49,7 +49,7 @@ Use this file together with **[docs/architecture.md](./docs/architecture.md)** a
 
 - Expect **Binance** to often fail from the browser (**CORS**); **CoinGecko** is the reliable crypto path.
 - **TwelveData** equity charts/quotes may rate-limit or fail with the demo key; UI should stay usable.
-- **BCBA listing HTML** may depend on **Corsfix** and parser stability; keep vendor-specific logic in `lib/providers/` so it can be replaced.
+- **IOL listing HTML / UDF** may depend on **Corsfix** and parser stability; keep vendor-specific logic in `lib/providers/` so it can be replaced.
 
 ## Verification
 

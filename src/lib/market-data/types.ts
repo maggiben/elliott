@@ -4,7 +4,7 @@ export type MarketDataSource =
   | "coingecko"
   | "binance"
   | "twelvedata"
-  /** HTML listing page (e.g. BCBA); swappable provider under `src/lib/providers/` */
+  /** HTML listing page (e.g. IOL for env-listed exchanges); swappable provider under `src/lib/providers/` */
   | "listing_html"
   /** User-entered term deposit; no external quote */
   | "fixed_income_synthetic";

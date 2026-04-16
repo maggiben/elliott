@@ -3,7 +3,8 @@ import { fetchCryptoQuoteViaCoingecko } from "@/lib/api/coingecko";
 import { fetchTwelveDataPrice } from "@/lib/api/twelvedata";
 import type { MarketData, QuoteKey } from "@/lib/market-data/types";
 import { positionQuoteKey } from "@/lib/market-data/types";
-import { fetchBcbaListingHtmlQuote } from "@/lib/providers/listing-html-bcba/fetch-listing-quote";
+import { fetchIolListingHtmlQuote } from "@/lib/providers/listing-html-bcba/fetch-listing-quote";
+import { isIolListingPreferredExchange } from "@/lib/providers/listing-html-bcba/vendor-config";
 import type { PortfolioPosition } from "@/lib/portfolio/types";
 import { buildFixedIncomeQuote } from "./build-fixed-income-quote";
 
@@ -26,8 +27,8 @@ async function fetchEquityQuote(
   signal?: AbortSignal,
 ): Promise<MarketData | null> {
   const ex = exchange?.trim().toUpperCase();
-  if (ex === "BCBA") {
-    const fromListing = await fetchBcbaListingHtmlQuote(symbol, signal);
+  if (ex && isIolListingPreferredExchange(ex)) {
+    const fromListing = await fetchIolListingHtmlQuote(symbol, ex, signal);
     if (fromListing) return fromListing;
   }
   return fetchTwelveDataPrice(symbol, signal, exchange);

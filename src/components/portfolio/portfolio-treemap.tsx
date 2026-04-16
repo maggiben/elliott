@@ -10,7 +10,9 @@ import Typography from "@mui/material/Typography";
 import { useTheme } from "@mui/material/styles";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { AllocationSlice } from "@/lib/calculations/portfolio-kpis";
-import { layoutSquarifiedTreemap } from "@/lib/charts/treemap-squarify";
+import {
+  layoutSquarifiedTreemapWithFloor,
+} from "@/lib/charts/treemap-squarify";
 import { formatQuoteMoney } from "@/lib/format/numbers";
 import type { MarketData } from "@/lib/market-data/types";
 import { positionQuoteKey } from "@/lib/market-data/types";
@@ -27,6 +29,10 @@ const GROUP_LABEL_H = 15;
 const OUTER_PAD = 2;
 const TILE_GAP = 1;
 const CHART_HEIGHT = 320;
+/** So small exchange / venue bands stay legible vs a dominant group. */
+const GROUP_LAYOUT_MIN_SHARE = 0.055;
+/** Within a group, tiny positions still get a readable tile. */
+const LEAF_LAYOUT_MIN_SHARE = 0.045;
 
 export type TreemapAssetFilter = "all" | AssetKind;
 
@@ -154,7 +160,6 @@ function buildSubgroups(
     if (!p) continue;
     const q = quotes[positionQuoteKey(p)];
     const ch = q?.change24hPct ?? null;
-    const ex = slice.exchange ? ` · ${slice.exchange}` : "";
     let subKey: string;
     if (kind === "equity") {
       subKey = (p.exchange?.trim() || slice.exchange?.trim() || "Venue n/a").toUpperCase();
@@ -170,7 +175,7 @@ function buildSubgroups(
     const leaf = {
       id: slice.id,
       value: slice.value,
-      symbol: `${slice.symbol}${ex}`,
+      symbol: `${slice.symbol}`,
       changePct: ch,
       detail: sliceDetail(slice, q),
     };
@@ -218,7 +223,9 @@ function layoutGroups(
     y1: 0,
   }));
 
-  layoutSquarifiedTreemap(summaries, 0, 0, width, height);
+  layoutSquarifiedTreemapWithFloor(summaries, 0, 0, width, height, {
+    minValueShareOfTotal: GROUP_LAYOUT_MIN_SHARE,
+  });
 
   for (const s of summaries) {
     const ix0 = s.x0 + OUTER_PAD;
@@ -226,7 +233,9 @@ function layoutGroups(
     const ix1 = s.x1 - OUTER_PAD;
     const iy1 = s.y1 - OUTER_PAD;
     if (ix1 > ix0 && iy1 > iy0 && s.leaves.length > 0) {
-      layoutSquarifiedTreemap(s.leaves, ix0, iy0, ix1, iy1);
+      layoutSquarifiedTreemapWithFloor(s.leaves, ix0, iy0, ix1, iy1, {
+        minValueShareOfTotal: LEAF_LAYOUT_MIN_SHARE,
+      });
     }
   }
 
@@ -454,7 +463,13 @@ export function PortfolioTreemap({
                 fill={groupBand}
                 stroke={border}
                 strokeWidth={1}
-              />
+              >
+                <title>
+                  {g.leaves.length
+                    ? `${g.label}: ${g.leaves.map((l) => l.symbol).join(", ")}`
+                    : g.label}
+                </title>
+              </rect>
               <text
                 x={g.x0 + 6}
                 y={g.y0 + 12}
@@ -470,14 +485,20 @@ export function PortfolioTreemap({
                 const y = leaf.y0 + TILE_GAP / 2;
                 const w = Math.max(0, leaf.x1 - leaf.x0 - TILE_GAP);
                 const h = Math.max(0, leaf.y1 - leaf.y0 - TILE_GAP);
-                if (w < 2 || h < 2) return null;
+                if (w < 1 || h < 1) return null;
                 const coarse = viewFilter === "all";
-                const showLabel =
+                const showFullLabel =
                   w >= (coarse ? 40 : 32) && h >= (coarse ? 32 : 26);
+                const showCompactLabel =
+                  !showFullLabel && w >= 20 && h >= 12;
                 const pct =
                   leaf.changePct !== null && Number.isFinite(leaf.changePct)
                     ? `${leaf.changePct >= 0 ? "+" : ""}${leaf.changePct.toFixed(2)}%`
                     : "—";
+                const symShort =
+                  leaf.symbol.length > 12
+                    ? `${leaf.symbol.slice(0, 10)}…`
+                    : leaf.symbol;
                 return (
                   <g key={leaf.id}>
                     <rect
@@ -492,7 +513,7 @@ export function PortfolioTreemap({
                     >
                       <title>{leaf.detail}</title>
                     </rect>
-                    {showLabel ? (
+                    {showFullLabel ? (
                       <>
                         <text
                           x={x + w / 2}
@@ -518,6 +539,18 @@ export function PortfolioTreemap({
                           {pct}
                         </text>
                       </>
+                    ) : showCompactLabel ? (
+                      <text
+                        x={x + w / 2}
+                        y={y + h / 2 + 4}
+                        textAnchor="middle"
+                        fill="rgba(255,255,255,0.9)"
+                        fontSize={9}
+                        fontWeight={600}
+                        style={{ fontFamily: theme.typography.fontFamily }}
+                      >
+                        {`${symShort} ${pct}`}
+                      </text>
                     ) : null}
                   </g>
                 );
@@ -545,8 +578,6 @@ export function PortfolioTreemap({
             width: 120,
             borderRadius: 0.5,
             background: `linear-gradient(90deg, rgb(229,72,52) 0%, #2c3139 50%, rgb(76,175,80) 100%)`,
-            border: 1,
-            borderColor: "divider",
           }}
         />
         <Typography variant="caption" color="text.secondary">

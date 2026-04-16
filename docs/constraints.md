@@ -9,7 +9,7 @@ Hard rules for this codebase. If a change violates these, it is out of scope unl
 | **No backend** | No custom API routes for app logic, no server-only database, no deployed server this app depends on for core features. The app is a static/edge-friendly Next.js client bundle. |
 | **No database** | No Postgres, SQLite server, etc. All durable state is **client-side**. |
 | **Client-side persistence** | Portfolio, cached quote snapshots, and related keys use the **browser** (IndexedDB via `idb`). Prefer IndexedDB over `localStorage` for structured data and size. |
-| **Allowed market inputs** | **CoinGecko**, **Binance** (public REST), and **TwelveData** for normalized market data. **BCBA** (Buenos Aires) spot may come from parsing a **public** listing HTML page (implementation under `src/lib/providers/listing-html-bcba/`). **Fixed income** positions use **only** user-entered fields (rate, dates, currency)—no external quote. Do not add other paid or private data vendors without an explicit decision. |
+| **Allowed market inputs** | **CoinGecko**, **Binance** (public REST), and **TwelveData** for normalized market data. Configured listing venues (default: BCBA, NYSE, NASDAQ, AMEX, ARCA, BATS; see `NEXT_PUBLIC_IOL_LISTING_EXCHANGES`) may use **InvertirOnline** public listing HTML and UDF JSON on `iol.invertironline.com` (implementation under `src/lib/providers/listing-html-bcba/`, Corsfix when needed). **Fixed income** positions use **only** user-entered fields (rate, dates, currency)—no external quote. Do not add other paid or private data vendors without an explicit decision. |
 
 ## Third-party browser proxy (CORS)
 
@@ -47,4 +47,4 @@ Hard rules for this codebase. If a change violates these, it is out of scope unl
 - **CoinGecko** is generally callable from the browser.
 - **Binance** public REST often **fails in the browser** due to CORS; the app tries Binance then **falls back to CoinGecko**.
 - **TwelveData** depends on their CORS policy and key tier; failures should degrade gracefully in the UI.
-- **BCBA listing HTML** may require **Corsfix** (or similar) when the origin does not allow browser `fetch`; without a key or when the proxy fails, BCBA quotes may be empty while other equities still work via TwelveData.
+- **IOL listing HTML / UDF** (venues listed in `NEXT_PUBLIC_IOL_LISTING_EXCHANGES`, or the built-in default set) may require **Corsfix** when the origin does not allow browser `fetch`; without a key or when the proxy fails, those quotes or charts may be empty while **TwelveData** still works as fallback where configured.
