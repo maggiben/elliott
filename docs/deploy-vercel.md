@@ -15,6 +15,8 @@ These paths are already ignored (see `.gitignore`):
 - `.env`, `.env.local`, `.env.production`, etc.
 - `.vercel` (local CLI link metadata)
 
+CLI deploys also exclude env files via [`.vercelignore`](../.vercelignore) so your laptop’s `.env` is not uploaded with the source bundle.
+
 **Do not** commit real keys. Only [env.example](../env.example) belongs in the repo (empty placeholders).
 
 For local development, copy the example file:

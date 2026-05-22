@@ -1,0 +1,4 @@
+# Never upload local env files — use Vercel Project → Environment Variables instead.
+.env
+.env.*
+!.env.example
