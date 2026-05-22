@@ -4,7 +4,6 @@ import { fetchTwelveDataPrice } from "@/lib/api/twelvedata";
 import type { MarketData, QuoteKey } from "@/lib/market-data/types";
 import { positionQuoteKey } from "@/lib/market-data/types";
 import { fetchIolListingHtmlQuote } from "@/lib/providers/listing-html-bcba/fetch-listing-quote";
-import { isIolListingPreferredExchange } from "@/lib/providers/listing-html-bcba/vendor-config";
 import type { PortfolioPosition } from "@/lib/portfolio/types";
 import { buildFixedIncomeQuote } from "./build-fixed-income-quote";
 
@@ -27,7 +26,7 @@ async function fetchEquityQuote(
   signal?: AbortSignal,
 ): Promise<MarketData | null> {
   const ex = exchange?.trim().toUpperCase();
-  if (ex && isIolListingPreferredExchange(ex)) {
+  if (ex) {
     const fromListing = await fetchIolListingHtmlQuote(symbol, ex, signal);
     if (fromListing) return fromListing;
   }

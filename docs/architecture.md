@@ -1,6 +1,6 @@
 # Elliott — architecture
 
-Elliott is a **client-side portfolio tracker**: holdings and preferences stay in the browser; market data is fetched from public HTTP sources (and optional third-party CORS proxies), then normalized into one model.
+Elliott is a **client-side portfolio tracker**: holdings and preferences stay in the browser. Market data is normalized into one model; **TwelveData** and **IOL** fetches go through Next.js **`/api/market/*`** routes so API keys stay on the server. **CoinGecko** / **Binance** may still be called from the browser where CORS allows.
 
 ## High-level diagram
 
@@ -17,12 +17,15 @@ flowchart TB
   subgraph persist [Persistence]
     IDB[(IndexedDB)]
   end
+  subgraph server [Next.js API]
+    API["/api/market/*"]
+  end
   subgraph network [Network]
     CG[CoinGecko]
     BN[Binance]
     TD[TwelveData]
-    List[IOL listing (env venues)]
-    CF[Corsfix proxy]
+    List[IOL listing]
+    CF[Corsfix]
   end
   Dashboard --> JotaiPortfolio
   Dashboard --> JotaiUI
@@ -31,9 +34,10 @@ flowchart TB
   RQ --> IDB
   RQ --> CG
   RQ --> BN
-  RQ --> TD
+  RQ --> API
+  API --> TD
+  API --> List
   List --> CF
-  RQ --> List
 ```
 
 IndexedDB holds the portfolio document and **merged quote / FX snapshots** (`market-cache-db.ts`) so the UI can show last-known prices while refetching.
@@ -50,10 +54,10 @@ Portfolio mutations go through **pure helpers** in `src/lib/portfolio/mutations.
 
 ## Data pipeline (market)
 
-1. **Raw fetch** — `src/lib/api/coingecko.ts`, `binance.ts`, `twelvedata.ts`, plus `src/lib/api/corsfix.ts` when a URL must be loaded cross-origin.
+1. **Raw fetch** — browser: `src/lib/api/coingecko.ts`, `binance.ts`; server (via `src/lib/api/market-api-client.ts` → `/api/market/*`): TwelveData and IOL (`src/lib/server/`, Corsfix fallback in `remote-fetch.ts`).
 2. **Orchestration** — `src/lib/quotes/fetch-portfolio-quotes.ts`:
    - **Crypto**: Binance → CoinGecko fallback.
-   - **Equity**: if `exchange` is in **`NEXT_PUBLIC_IOL_LISTING_EXCHANGES`** (default includes BCBA, NYSE, NASDAQ, AMEX, ARCA, BATS), try **IOL listing HTML** (`fetchIolListingHtmlQuote`) then **TwelveData**.
+   - **Equity**: when `exchange` is set, try **IOL listing HTML** via `/api/market/iol/listing` (server allowlist: `IOL_LISTING_EXCHANGES`, default BCBA, NYSE, NASDAQ, AMEX, ARCA, BATS), then **TwelveData**.
    - **Fixed income**: synthetic quote from user inputs (`build-fixed-income-quote.ts`).
 3. **Normalization** — `src/lib/market-data/normalize.ts` builds `MarketData` (price, optional 24h %, source, `externalId` for charts when available). Listing HTML uses `normalizeFromListingHtmlQuote`.
 4. **Addressing quotes** — `quoteKey` / `positionQuoteKey` in `src/lib/market-data/types.ts` keys the quote map; fixed income uses `fixed_income:${positionId}` so multiple deposits do not collide.

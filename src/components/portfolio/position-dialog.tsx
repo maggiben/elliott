@@ -443,7 +443,7 @@ function PositionDialogInner({
           <Typography variant="caption" color="text.secondary">
             {form.kind === "fixed_income"
               ? "Value = principal × (1 + TNA × days/365), simple interest, from your dates (no market feed)."
-              : "Search and quotes: CoinGecko / Binance (crypto); equities use InvertirOnline when exchange is in NEXT_PUBLIC_IOL_LISTING_EXCHANGES (defaults include NYSE, NASDAQ, BCBA), else TwelveData."}
+              : "Search and quotes: CoinGecko / Binance (crypto); equities try InvertirOnline first for configured exchanges (default: NYSE, NASDAQ, BCBA), else TwelveData."}
           </Typography>
           {symbolField}
           {form.kind !== "fixed_income" ? (

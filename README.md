@@ -48,10 +48,10 @@ cp env.example .env.local
 
 | Variable | Why |
 |----------|-----|
-| `NEXT_PUBLIC_TWELVEDATA_API_KEY` | Stronger equity quotes/charts than the public demo key |
-| `NEXT_PUBLIC_IOL_LISTING_EXCHANGES` | Comma-separated venues for IOL-first quotes/charts (default: BCBA, NYSE, NASDAQ, AMEX, ARCA, BATS). Set empty to disable IOL-first for all. |
-| `NEXT_PUBLIC_CORSFIX_API_KEY` | Helps load **IOL** listing pages from the browser when plain `fetch` is blocked |
-| `NEXT_PUBLIC_IOL_UDF_CHARTS` | Set to `0` to skip IOL UDF daily charts for exchanges in the IOL listing list (TwelveData-only path). `NEXT_PUBLIC_BCBA_IOL_CHARTS=0` is still honored as an opt-out. |
+| `TWELVEDATA_API_KEY` | Server-only; stronger equity quotes/charts than the public `demo` key |
+| `CORSFIX_API_KEY` | Server-only; improves IOL listing/UDF fetch when direct server requests fail |
+| `IOL_LISTING_EXCHANGES` | Server-only; comma-separated venues for IOL-first quotes/charts (default: BCBA, NYSE, NASDAQ, AMEX, ARCA, BATS). Set empty to disable IOL-first. |
+| `IOL_UDF_CHARTS` | Server-only; set to `0` to skip IOL UDF daily charts (TwelveData-only). `BCBA_IOL_CHARTS=0` is a legacy alias. |
 
 ## Scripts
 
@@ -67,7 +67,7 @@ cp env.example .env.local
 
 Elliott builds as a standard Next.js app on Vercel. **Do not commit** `.env` or `.env.local`; set the same variables from [env.example](./env.example) in the Vercel project **Environment Variables** UI, then redeploy.
 
-See **[docs/deploy-vercel.md](./docs/deploy-vercel.md)** for the full checklist, security notes (`NEXT_PUBLIC_*` is visible in the browser bundle), and troubleshooting.
+See **[docs/deploy-vercel.md](./docs/deploy-vercel.md)** for the full checklist and troubleshooting.
 
 ## Features (current)
 

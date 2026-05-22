@@ -1,43 +1,13 @@
 /**
  * Replace this module if the listing site or URL pattern changes.
  * Keep broker-specific hostnames and paths out of the rest of the app.
+ * Exchange allowlists and chart opt-outs live in `src/lib/server/iol-config.ts`.
  */
 export const IOL_SITE_ORIGIN = "https://iol.invertironline.com";
 
-/**
- * Default venues when `NEXT_PUBLIC_IOL_LISTING_EXCHANGES` is unset (comma-separated MIC-style codes).
- * Override the env to add XETRA, etc., or trim to a subset.
- */
+/** Default venues when `IOL_LISTING_EXCHANGES` is unset (comma-separated MIC-style codes). */
 export const DEFAULT_IOL_LISTING_EXCHANGES_CSV =
   "BCBA,NYSE,NASDAQ,AMEX,ARCA,BATS";
-
-/** Parsed set; empty env string means “no IOL-first venues”. */
-export function iolListingPreferredExchanges(): Set<string> {
-  const raw = process.env.NEXT_PUBLIC_IOL_LISTING_EXCHANGES;
-  const csv =
-    raw === undefined || raw === null
-      ? DEFAULT_IOL_LISTING_EXCHANGES_CSV
-      : raw.trim();
-  if (csv === "") return new Set<string>();
-  const set = new Set<string>();
-  for (const part of csv.split(",")) {
-    const ex = part.trim().toUpperCase();
-    if (ex) set.add(ex);
-  }
-  return set;
-}
-
-/**
- * Listing HTML + UDF history on IOL share the same layout for configured venues.
- * Prefer IOL before TwelveData to avoid API credits where the feed exists.
- */
-export function isIolListingPreferredExchange(
-  exchange: string | undefined,
-): boolean {
-  const ex = exchange?.trim().toUpperCase();
-  if (!ex) return false;
-  return iolListingPreferredExchanges().has(ex);
-}
 
 /** TradingView UDF-style feed used by IOL's graficador (`init.controllerURL` in their HTML). */
 const IOL_UDF_PATH = "/api/cotizaciones";

@@ -16,21 +16,3 @@ export function corsfixProxyUrl(targetHttpsUrl: string): string {
   }
   return `${PROXY_ORIGIN}/?${t}`;
 }
-
-export function corsfixRequestHeaders(): Record<string, string> {
-  const key = process.env.NEXT_PUBLIC_CORSFIX_API_KEY?.trim();
-  if (!key) return {};
-  return { "x-corsfix-key": key };
-}
-
-export async function fetchViaCorsfix(
-  targetHttpsUrl: string,
-  init?: RequestInit,
-): Promise<Response> {
-  const url = corsfixProxyUrl(targetHttpsUrl);
-  const headers = new Headers(init?.headers);
-  for (const [k, v] of Object.entries(corsfixRequestHeaders())) {
-    headers.set(k, v);
-  }
-  return fetch(url, { ...init, headers });
-}

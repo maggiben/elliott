@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { corsfixProxyUrl } from "./corsfix";
+import { corsfixProxyUrl } from "./corsfix-url";
 
 describe("corsfixProxyUrl", () => {
   it("embeds target as raw https://… query (Corsfix GET form, not percent-encoded)", () => {

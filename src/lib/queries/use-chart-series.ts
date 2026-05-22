@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { coingeckoMarketChartUsd, coingeckoSearchTopCoin } from "@/lib/api/coingecko";
 import { fetchTwelveDataTimeSeries } from "@/lib/api/twelvedata";
 import { fetchIolUdfDailySeries } from "@/lib/providers/listing-html-bcba/fetch-iol-udf-daily-series";
-import { isIolListingPreferredExchange } from "@/lib/providers/listing-html-bcba/vendor-config";
 import type { ChartPoint } from "@/lib/storage/market-cache-db";
 import {
   chartCacheKeyCrypto,
@@ -106,7 +105,7 @@ export function useEquityChartSeries(
       let fresh: ChartPoint[] = [];
       try {
         const exU = ex?.trim().toUpperCase();
-        if (exU && isIolListingPreferredExchange(exU)) {
+        if (exU) {
           fresh = await fetchIolUdfDailySeries(sym, exU, days, signal);
         }
         if (fresh.length === 0) {

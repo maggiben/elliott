@@ -1,6 +1,6 @@
 # Deploy Elliott to Vercel
 
-Elliott is a **client-only** Next.js app: no custom API routes, no server database. Vercel runs `next build` and serves the static/edge bundle; all portfolio data stays in each visitor’s browser (IndexedDB).
+Elliott is a Next.js app with **no server database**: portfolio data stays in each visitor’s browser (IndexedDB). Vercel runs `next build` and serves the app plus **Route Handlers** under `/api/market/*` for TwelveData and IOL (API keys stay on the server).
 
 ## Prerequisites
 
@@ -33,19 +33,17 @@ In the Vercel project: **Settings → Environment Variables**, add the same name
 
 | Variable | Required | Notes |
 |----------|----------|--------|
-| `NEXT_PUBLIC_TWELVEDATA_API_KEY` | No | Omit or leave empty to use TwelveData’s public `demo` key (rate limits). |
-| `NEXT_PUBLIC_CORSFIX_API_KEY` | No | Improves IOL listing HTML in the browser when CORS blocks direct `fetch`. |
-| `NEXT_PUBLIC_IOL_LISTING_EXCHANGES` | No | Unset = default venues (BCBA, NYSE, NASDAQ, AMEX, ARCA, BATS). Set to empty string to disable IOL-first routing. |
-| `NEXT_PUBLIC_IOL_UDF_CHARTS` | No | Set to `0` to skip IOL UDF charts (TwelveData-only for those exchanges). |
-| `NEXT_PUBLIC_BCBA_IOL_CHARTS` | No | Legacy alias; `0` has the same effect as above. |
+| `TWELVEDATA_API_KEY` | No | Omit or leave empty to use TwelveData’s public `demo` key (rate limits). |
+| `CORSFIX_API_KEY` | No | Improves IOL listing/UDF when server direct fetch fails. |
+| `IOL_LISTING_EXCHANGES` | No | Unset = default venues (BCBA, NYSE, NASDAQ, AMEX, ARCA, BATS). Set to empty string to disable IOL-first routing. |
+| `IOL_UDF_CHARTS` | No | Set to `0` to skip IOL UDF charts (TwelveData-only for those exchanges). |
+| `BCBA_IOL_CHARTS` | No | Legacy alias; `0` has the same effect as `IOL_UDF_CHARTS=0`. |
 
 After changing variables, **redeploy** so the build embeds the new values.
 
-### Important: `NEXT_PUBLIC_*` is not a vault
+### Important: server-only env vars
 
-Anything prefixed with `NEXT_PUBLIC_` is inlined into the **browser JavaScript bundle**. Setting it in Vercel hides it from your Git repo and from casual repo viewers, but **anyone can still read it** in DevTools or the built assets. That is intentional for this app (see [constraints.md](./constraints.md)): there is no backend to hold a private TwelveData or Corsfix key.
-
-Treat these keys as **usage-limited, rotatable API keys**, not as server secrets.
+`TWELVEDATA_API_KEY`, `CORSFIX_API_KEY`, and IOL config vars are read only on the server and are **not** inlined into the browser bundle. Do not prefix them with `NEXT_PUBLIC_`.
 
 ## 3. Deploy
 
@@ -72,7 +70,7 @@ vercel --prod
 
 1. Open the production URL; add a test position and confirm IndexedDB persistence (refresh the page).
 2. Check equity quotes (TwelveData / IOL paths) and crypto (CoinGecko).
-3. If BCBA or IOL-listed symbols fail in the browser, confirm `NEXT_PUBLIC_CORSFIX_API_KEY` is set on Vercel and redeploy.
+3. If BCBA or IOL-listed symbols fail, confirm `CORSFIX_API_KEY` is set on Vercel and redeploy; check Network tab for `/api/market/iol/*` responses.
 4. Run locally before pushing: `npm run lint` and `npm run build`.
 
 ## 5. Security checklist
@@ -80,16 +78,16 @@ vercel --prod
 - [ ] No `.env` or `.env.local` with real keys in Git (`git status` clean; never `git add .env*`).
 - [ ] Keys set only in Vercel (or local `.env.local`), not in README or issues.
 - [ ] Rotate TwelveData / Corsfix keys if they were ever committed or shared publicly.
-- [ ] Understand that `NEXT_PUBLIC_*` values are visible in the client bundle.
+- [ ] Market env vars use server names only (no `NEXT_PUBLIC_*` for keys or IOL config).
 
 ## Troubleshooting
 
 | Symptom | Likely cause |
 |---------|----------------|
 | Build fails on Vercel | Run `npm run build` locally; fix TypeScript/ESLint errors first. |
-| Env vars ignored | Redeploy after changing variables; names must match exactly (including `NEXT_PUBLIC_` prefix). |
-| IOL / BCBA quotes empty | Missing or invalid Corsfix key; or IOL HTML/parser changes. |
-| Equity charts rate-limited | TwelveData demo key; add `NEXT_PUBLIC_TWELVEDATA_API_KEY`. |
+| Env vars ignored | Redeploy after changing variables; names must match exactly (no `NEXT_PUBLIC_` prefix for market vars). |
+| IOL / BCBA quotes empty | Missing/invalid `CORSFIX_API_KEY`; IOL HTML/parser changes; check `/api/market/iol/listing`. |
+| Equity charts rate-limited | TwelveData demo key; add `TWELVEDATA_API_KEY`. |
 | Binance errors in console | Expected in browser (CORS); crypto should still work via CoinGecko. |
 
 ## Related docs
