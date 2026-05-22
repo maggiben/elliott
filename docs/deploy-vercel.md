@@ -84,7 +84,7 @@ vercel --prod
 
 | Symptom | Likely cause |
 |---------|----------------|
-| Build fails on Vercel | Run `npm run build` locally; fix TypeScript/ESLint errors first. |
+| Build fails on Vercel | Run `npm run build` locally (Turbopack is the default in Next.js 16). Fix TypeScript/ESLint errors first. If you see a vague `path` / `Received undefined` error after a dependency upgrade, try **Deployments → … → Redeploy** with **Clear build cache** enabled. |
 | Env vars ignored | Redeploy after changing variables; names must match exactly (no `NEXT_PUBLIC_` prefix for market vars). |
 | IOL / BCBA quotes empty | Missing/invalid `CORSFIX_API_KEY`; IOL HTML/parser changes; check `/api/market/iol/listing`. |
 | Equity charts rate-limited | TwelveData demo key; add `TWELVEDATA_API_KEY`. |

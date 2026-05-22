@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
+import { SITE_APP_NAME, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Elliott · Portfolio tracker",
+  metadataBase: siteUrl(),
+  title: {
+    default: `${SITE_APP_NAME} · Portfolio tracker`,
+    template: `%s · ${SITE_APP_NAME}`,
+  },
   description: "Client-side portfolio tracker with live public market data",
 };
 

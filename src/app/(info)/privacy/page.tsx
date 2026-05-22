@@ -1,26 +1,28 @@
 import type { Metadata } from "next";
-import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
-import { InfoPage } from "@/components/layout/info-page";
+import Typography from "@mui/material/Typography";
+import NextLink from "next/link";
 import { InfoSection } from "@/components/layout/info-section";
 import { SITE_APP_NAME, SITE_OWNER_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: `Privacy policy · ${SITE_APP_NAME}`,
+  title: "Privacy policy",
   description: `How ${SITE_APP_NAME} handles your data`,
 };
 
 export default function PrivacyPage() {
   return (
-    <InfoPage title="Privacy policy">
+    <Stack spacing={3} sx={{ maxWidth: 720 }}>
+      <Typography component="h1" variant="h1">
+        Privacy policy
+      </Typography>
       <Stack spacing={3}>
         <InfoSection title="Summary">
           <p>
             {SITE_APP_NAME} is built so your portfolio stays on your device.
-            {SITE_OWNER_NAME} does not receive your holdings through an
-            Elliott account—there isn&apos;t one. This policy describes what
-            the app stores locally and what may be sent when it fetches market
-            data.
+            {SITE_OWNER_NAME} does not receive your holdings through an Elliott
+            account—there isn&apos;t one. This policy describes what the app
+            stores locally and what may be sent when it fetches market data.
           </p>
         </InfoSection>
 
@@ -28,8 +30,8 @@ export default function PrivacyPage() {
           <p>
             Portfolio positions, UI preferences, cached quote snapshots, and
             related keys are kept in your browser (IndexedDB). Only you (or
-            someone with access to your device or backup file) can read that
-            data unless you choose to share it.
+            someone with access to your device or backup file) can read that data
+            unless you choose to share it.
           </p>
         </InfoSection>
 
@@ -64,14 +66,11 @@ export default function PrivacyPage() {
         <InfoSection title="Changes and contact">
           <p>
             This policy may be updated as the product evolves. For common
-            questions, see the{" "}
-            <Link href="/faq" color="primary" underline="hover">
-              FAQ
-            </Link>
-            . The app is maintained by {SITE_OWNER_NAME}.
+            questions, see the <NextLink href="/faq">FAQ</NextLink>. The app is
+            maintained by {SITE_OWNER_NAME}.
           </p>
         </InfoSection>
       </Stack>
-    </InfoPage>
+    </Stack>
   );
 }

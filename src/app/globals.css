@@ -11,3 +11,12 @@ body {
 * {
   box-sizing: border-box;
 }
+
+main a {
+  color: #7dd3c0;
+  text-decoration: none;
+}
+
+main a:hover {
+  text-decoration: underline;
+}
