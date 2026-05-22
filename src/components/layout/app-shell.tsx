@@ -64,7 +64,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               }}
             />
             <Typography variant="h2" sx={{ fontSize: "1.1rem" }}>
-              Elliott
+              Elliott Portfolio
             </Typography>
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
