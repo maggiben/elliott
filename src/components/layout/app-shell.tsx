@@ -3,6 +3,7 @@
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Link from "@mui/material/Link";
 import Container from "@mui/material/Container";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
@@ -11,7 +12,9 @@ import Select from "@mui/material/Select";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { useAtom, useSetAtom } from "jotai";
+import NextLink from "next/link";
 import { DataBackupMenu } from "@/components/layout/data-backup-menu";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { positionDialogAtom, portfolioDisplayCurrencyAtom } from "@/state/ui-atoms";
 
 const BOOK_CURRENCIES = [
@@ -41,13 +44,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }}
       >
         <Toolbar sx={{ gap: 2 }}>
-          <Box
+          <Link
+            component={NextLink}
+            href="/"
+            underline="none"
+            color="inherit"
+            aria-label="Elliott Portfolio home"
             sx={{
               flexGrow: 1,
               display: "flex",
               alignItems: "center",
               gap: 1.25,
               minWidth: 0,
+              "&:hover": { opacity: 0.85 },
             }}
           >
             <Box
@@ -66,7 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Typography variant="h2" sx={{ fontSize: "1.1rem" }}>
               Elliott Portfolio
             </Typography>
-          </Box>
+          </Link>
           <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
             Client-only · IndexedDB
           </Typography>
@@ -100,6 +109,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Box component="main" sx={{ flex: 1, py: 3 }}>
         <Container maxWidth="lg">{children}</Container>
       </Box>
+      <SiteFooter />
     </Box>
   );
 }
