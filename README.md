@@ -63,6 +63,12 @@ cp env.example .env.local
 | `npm run lint` | ESLint |
 | `npm run test` | Vitest (unit tests) |
 
+## Deploy to Vercel
+
+Elliott builds as a standard Next.js app on Vercel. **Do not commit** `.env` or `.env.local`; set the same variables from [env.example](./env.example) in the Vercel project **Environment Variables** UI, then redeploy.
+
+See **[docs/deploy-vercel.md](./docs/deploy-vercel.md)** for the full checklist, security notes (`NEXT_PUBLIC_*` is visible in the browser bundle), and troubleshooting.
+
 ## Features (current)
 
 1. Portfolio **add / edit / delete** with automatic save in the browser  
