@@ -7,10 +7,16 @@ import {
   loadExchangeRatesCache,
   saveExchangeRatesCacheMerge,
 } from "@/lib/storage/market-cache-db";
+import {
+  getExchangeRatesFetchedAt,
+  isWithinMarketFetchTtl,
+  MARKET_FETCH_TTL_MS,
+  touchExchangeRatesFetchedAt,
+} from "@/lib/storage/market-fetch-ttl";
 import { debounce } from "@/lib/utils/debounce";
 import { queryKeys } from "./keys";
 
-const STALE_MS = 120_000;
+const STALE_MS = MARKET_FETCH_TTL_MS;
 const GC_MS = 1000 * 60 * 60 * 24 * 7;
 
 export function useCoingeckoExchangeRates(enabled: boolean) {
@@ -28,11 +34,22 @@ export function useCoingeckoExchangeRates(enabled: boolean) {
   return useQuery({
     queryKey,
     queryFn: async ({ signal }) => {
-      const cachedIdb = await loadExchangeRatesCache();
+      const [cachedIdb, ratesFetchedAt] = await Promise.all([
+        loadExchangeRatesCache(),
+        getExchangeRatesFetchedAt(),
+      ]);
       const prev =
         (queryClient.getQueryData(queryKey) as
           | Record<string, number>
           | undefined) ?? {};
+
+      if (
+        isWithinMarketFetchTtl(ratesFetchedAt) &&
+        Object.keys(cachedIdb).length > 0
+      ) {
+        return { ...cachedIdb, ...prev };
+      }
+
       let fresh: Record<string, number> = {};
       try {
         fresh = await fetchCoingeckoExchangeRates(signal);
@@ -44,7 +61,10 @@ export function useCoingeckoExchangeRates(enabled: boolean) {
         ...prev,
         ...fresh,
       };
-      if (Object.keys(fresh).length > 0) persistRates(merged);
+      if (Object.keys(fresh).length > 0) {
+        persistRates(merged);
+        void touchExchangeRatesFetchedAt();
+      }
       return merged;
     },
     staleTime: STALE_MS,

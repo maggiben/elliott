@@ -33,6 +33,20 @@ async function fetchEquityQuote(
   return fetchTwelveDataPrice(symbol, signal, exchange);
 }
 
+/** Merges quote layers and always rebuilds synthetic fixed-income rows from positions. */
+export function mergePortfolioQuoteLayers(
+  positions: PortfolioPosition[],
+  ...layers: Record<QuoteKey, MarketData>[]
+): Record<QuoteKey, MarketData> {
+  const merged: Record<QuoteKey, MarketData> = Object.assign({}, ...layers);
+  for (const p of positions) {
+    if (p.kind !== "fixed_income") continue;
+    const q = buildFixedIncomeQuote(p);
+    if (q) merged[positionQuoteKey(p)] = q;
+  }
+  return merged;
+}
+
 export async function fetchQuotesForPortfolio(
   positions: PortfolioPosition[],
   signal?: AbortSignal,

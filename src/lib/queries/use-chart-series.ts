@@ -11,6 +11,11 @@ import {
   loadChartSeriesForKey,
   saveChartSeriesForKey,
 } from "@/lib/storage/market-cache-db";
+import {
+  getChartSeriesFetchedAt,
+  isWithinMarketFetchTtl,
+  touchChartSeriesFetchedAt,
+} from "@/lib/storage/market-fetch-ttl";
 import { queryKeys } from "./keys";
 
 const STALE_MS = 5 * 60_000;
@@ -40,7 +45,10 @@ export function useCryptoChartSeries(symbol: string | null, days: number) {
     queryFn: async ({ signal }) => {
       if (!sym) return [];
       const cacheKey = chartCacheKeyCrypto(sym, days);
-      const idbSeries = await loadChartSeriesForKey(cacheKey);
+      const [idbSeries, chartFetchedAt] = await Promise.all([
+        loadChartSeriesForKey(cacheKey),
+        getChartSeriesFetchedAt(cacheKey),
+      ]);
       const prev = queryClient.getQueryData(queryKey) as
         | ChartPoint[]
         | undefined;
@@ -49,6 +57,10 @@ export function useCryptoChartSeries(symbol: string | null, days: number) {
           queryKey,
           mergeChartSeries([], prev, idbSeries),
         );
+      }
+
+      if (isWithinMarketFetchTtl(chartFetchedAt) && idbSeries.length > 0) {
+        return mergeChartSeries([], prev, idbSeries);
       }
 
       let fresh: ChartPoint[] = [];
@@ -66,7 +78,10 @@ export function useCryptoChartSeries(symbol: string | null, days: number) {
         queryClient.getQueryData(queryKey) as ChartPoint[] | undefined,
         idbSeries,
       );
-      if (fresh.length > 0) void saveChartSeriesForKey(cacheKey, fresh);
+      if (fresh.length > 0) {
+        void saveChartSeriesForKey(cacheKey, fresh);
+        void touchChartSeriesFetchedAt(cacheKey);
+      }
       return merged;
     },
   });
@@ -91,7 +106,10 @@ export function useEquityChartSeries(
     queryFn: async ({ signal }) => {
       if (!sym) return [];
       const cacheKey = chartCacheKeyEquity(sym, days, ex);
-      const idbSeries = await loadChartSeriesForKey(cacheKey);
+      const [idbSeries, chartFetchedAt] = await Promise.all([
+        loadChartSeriesForKey(cacheKey),
+        getChartSeriesFetchedAt(cacheKey),
+      ]);
       const prev = queryClient.getQueryData(queryKey) as
         | ChartPoint[]
         | undefined;
@@ -100,6 +118,10 @@ export function useEquityChartSeries(
           queryKey,
           mergeChartSeries([], prev, idbSeries),
         );
+      }
+
+      if (isWithinMarketFetchTtl(chartFetchedAt) && idbSeries.length > 0) {
+        return mergeChartSeries([], prev, idbSeries);
       }
 
       let fresh: ChartPoint[] = [];
@@ -120,7 +142,10 @@ export function useEquityChartSeries(
         queryClient.getQueryData(queryKey) as ChartPoint[] | undefined,
         idbSeries,
       );
-      if (fresh.length > 0) void saveChartSeriesForKey(cacheKey, fresh);
+      if (fresh.length > 0) {
+        void saveChartSeriesForKey(cacheKey, fresh);
+        void touchChartSeriesFetchedAt(cacheKey);
+      }
       return merged;
     },
   });

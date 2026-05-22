@@ -12,7 +12,7 @@ const EXCHANGE_RATES_KEY = "market-exchange-rates-v1";
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
-function getDb(): Promise<IDBPDatabase> {
+export function getDb(): Promise<IDBPDatabase> {
   if (!dbPromise) {
     dbPromise = openDB(DB, VERSION, {
       upgrade(db) {
