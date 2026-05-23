@@ -3,6 +3,10 @@ export const SITE_OWNER_NAME = "Benjamin Maggi LLC";
 
 export const SITE_APP_NAME = "Elliott";
 
+/** Short description for meta tags, Open Graph, and JSON-LD. */
+export const SITE_DESCRIPTION =
+  "Track stocks, crypto, and fixed income in your browser. Portfolio data stays on your device in IndexedDB with live public market quotes.";
+
 const DEFAULT_SITE_URL = "http://localhost:3000";
 
 /** Canonical origin for metadata and Open Graph (build / SSR). */

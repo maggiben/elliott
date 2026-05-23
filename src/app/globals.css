@@ -14,9 +14,10 @@ body {
 
 main a {
   color: #7dd3c0;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 main a:hover {
-  text-decoration: underline;
+  color: #9ae8d6;
 }

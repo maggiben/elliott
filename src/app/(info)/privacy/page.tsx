@@ -3,12 +3,14 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
 import { InfoSection } from "@/components/layout/info-section";
+import { pageMetadata } from "@/lib/seo";
 import { SITE_APP_NAME, SITE_OWNER_NAME } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy policy",
-  description: `How ${SITE_APP_NAME} handles your data`,
-};
+  description: `How ${SITE_APP_NAME} stores portfolio data on your device and what is sent when fetching public market quotes.`,
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

@@ -45,9 +45,13 @@ export function InfoShell({ children }: { children: React.ReactNode }) {
               alt=""
               width={28}
               height={28}
+              fetchPriority="high"
               sx={{ height: 28, width: 28, flexShrink: 0, objectFit: "contain" }}
             />
-            <Typography variant="h2" sx={{ fontSize: "1.1rem" }}>
+            <Typography
+              component="span"
+              sx={{ fontSize: "1.1rem", fontWeight: 600 }}
+            >
               {SITE_APP_NAME}
             </Typography>
           </Link>

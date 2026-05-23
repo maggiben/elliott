@@ -65,6 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               alt=""
               width={28}
               height={28}
+              fetchPriority="high"
               sx={{
                 height: 28,
                 width: 28,
@@ -72,7 +73,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 objectFit: "contain",
               }}
             />
-            <Typography variant="h2" sx={{ fontSize: "1.1rem" }}>
+            <Typography
+              component="span"
+              sx={{ fontSize: "1.1rem", fontWeight: 600 }}
+            >
               Elliott Portfolio
             </Typography>
           </Link>

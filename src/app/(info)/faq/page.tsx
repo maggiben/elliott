@@ -3,12 +3,14 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import NextLink from "next/link";
 import { InfoSection } from "@/components/layout/info-section";
+import { pageMetadata } from "@/lib/seo";
 import { SITE_APP_NAME } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "FAQ",
-  description: `Frequently asked questions about ${SITE_APP_NAME}`,
-};
+  description: `Frequently asked questions about ${SITE_APP_NAME} — local storage, market data, backups, and quotes.`,
+  path: "/faq",
+});
 
 export default function FaqPage() {
   return (

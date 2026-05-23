@@ -8,15 +8,17 @@ import Typography from "@mui/material/Typography";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useMemo } from "react";
 import { useCoingeckoExchangeRates } from "@/lib/queries/use-coingecko-exchange-rates";
-import { NetWorthChart } from "@/components/charts/net-worth-chart";
-import { PriceChart } from "@/components/charts/price-chart";
+import {
+  AllocationPieChart,
+  NetWorthChart,
+  PortfolioTreemap,
+  PositionDialog,
+  PriceChart,
+} from "@/components/dashboard/lazy-dashboard-widgets";
 import { AppShell } from "@/components/layout/app-shell";
 import { AllocationList } from "@/components/portfolio/allocation-list";
-import { AllocationPieChart } from "@/components/portfolio/allocation-pie-chart";
-import { PortfolioTreemap } from "@/components/portfolio/portfolio-treemap";
 import { KpiCards } from "@/components/portfolio/kpi-cards";
 import { OpportunitiesPanel } from "@/components/portfolio/opportunities-panel";
-import { PositionDialog } from "@/components/portfolio/position-dialog";
 import { PositionsTable } from "@/components/portfolio/positions-table";
 import { computePortfolioKpis } from "@/lib/calculations/portfolio-kpis";
 import { detectOpportunities } from "@/lib/opportunities/rules";
